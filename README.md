@@ -14,3 +14,9 @@
 ## Фото устройства
 
 <img src="assets/photo1.jpg"></img>
+
+## License
+
+Hardware is released under the [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) license.
+
+Software is relesed under [MIT](LICENSE) license.
