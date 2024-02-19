@@ -1,11 +1,11 @@
 Спутник Плутона -- Харон.
 
-# Панели
+# Панели v1.0.0
 
 ## Вид спереди / сзади
 
-<img src="assets/front.svg"></img>
-<img src="assets/back.svg"></img>
+<img src="hw/front.svg"></img>
+<img src="hw/back.svg"></img>
 
 ## Корпус
 
