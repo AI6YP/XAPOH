@@ -7,6 +7,17 @@
 <img src="hw/front.svg"></img>
 <img src="hw/back.svg"></img>
 
+
+Исходные файлы для печатной платы:
+* hw/front.svg
+* hw/back.svg
+
+Для получения KiCAD проекта используйте Inkscape + svg2shenzhen
+
+https://github.com/badgeek/svg2shenzhen
+
+Для получения GERBER файлов используйте KiCAD
+
 ## Корпус
 
 <img src="assets/case4.webp"></img>
