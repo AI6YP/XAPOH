@@ -21,6 +21,17 @@ https://github.com/badgeek/svg2shenzhen
 
 https://fonts.google.com/specimen/B612
 
+## Перечень элементов
+
+| Поз.<br> обозна- <br>чение | Наименование | Кол. | Примечание |
+|-|-|-|-|
+| D1 | VS1838B | 1 | |
+| R1 | Переменный резистор 10К | 1 | |
+| ИН1 | 2" TFT ST7789V | 1 | |
+| SB1 SB2 | Кнопка 5x5 | 2 | |
+| Р1 - Р9 | SMA -> IPEX | 9 | |
+| Р10 | DB9 | 1 | |
+
 ## Корпус
 
 <img src="assets/case4.webp"></img>
@@ -34,3 +45,4 @@ https://fonts.google.com/specimen/B612
 Hardware is released under the [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) license.
 
 Software is relesed under [MIT](LICENSE) license.
+
