@@ -17,6 +17,10 @@ https://github.com/badgeek/svg2shenzhen
 
 Для получения GERBER файлов используйте KiCAD
 
+Для надписей использован шрифт B612:
+
+https://fonts.google.com/specimen/B612
+
 ## Корпус
 
 <img src="assets/case4.webp"></img>
