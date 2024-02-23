@@ -4,9 +4,7 @@
 
 ## Вид спереди / сзади
 
-<svg width="32" height="200" style="fill:#777"><text transform="rotate(-90)" x="-200" y="30">Передняя панель</text></svg>
 <img src="hw/front.svg"></img>
-<svg width="32" height="200" style="fill:#777"><text transform="rotate(-90)" x="-200" y="30">Задняя панель</text></svg>
 <img src="hw/back.svg"></img>
 
 Исходные файлы для печатной платы:
