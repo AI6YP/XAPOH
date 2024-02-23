@@ -27,7 +27,7 @@ https://fonts.google.com/specimen/B612
 |-|-|-|-|
 | D1 | VS1838B | 1 | |
 | R1 | Переменный резистор 10К | 1 | |
-| ИН1 | 2" TFT ST7789V | 1 | |
+| ИН1 | Индикатор 2" TFT ST7789V | 1 | |
 | SB1 SB2 | Кнопка 5x5 | 2 | |
 | Р1 - Р9 | SMA -> IPEX | 9 | |
 | Р10 | DB9 | 1 | |
@@ -35,6 +35,10 @@ https://fonts.google.com/specimen/B612
 ## Корпус
 
 <img src="assets/case4.webp"></img>
+
+## Индикатор
+
+<img src="assets/tft-mechanical.webp"></img>
 
 ## Фото устройства
 
