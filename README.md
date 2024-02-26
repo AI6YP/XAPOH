@@ -1,8 +1,12 @@
 Спутник Плутона -- Харон.
 
-Предварительные каскады для Analog Devices ADALM-PLUTO SDR
+Предварительные каскады для Analog Devices ADALM-PLUTO SDR.
 
 https://wiki.analog.com/university/tools/pluto
+
+* Передняя панель управления и индикации
+* Задняя панель с разъёмами
+* Основная плата
 
 ## Панели v1.0.0
 
