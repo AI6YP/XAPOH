@@ -1,8 +1,12 @@
 Спутник Плутона -- Харон.
 
-# Панели v1.0.0
+Предварительные каскады для Analog Devices ADALM-PLUTO SDR
 
-## Вид спереди / сзади
+https://wiki.analog.com/university/tools/pluto
+
+## Панели v1.0.0
+
+### Вид спереди / сзади
 
 <img src="hw/front.svg"></img>
 <img src="hw/back.svg"></img>
@@ -21,7 +25,7 @@ https://github.com/badgeek/svg2shenzhen
 
 https://fonts.google.com/specimen/B612
 
-## Перечень элементов
+### Перечень элементов
 
 | Поз.<br> обозна- <br>чение | Наименование | Кол. | Примечание |
 |-|-|-|-|
@@ -31,6 +35,52 @@ https://fonts.google.com/specimen/B612
 | SB1 SB2 | Кнопка 6x6x5 | 2 | |
 | Р1 - Р9 | SMA -> IPEX | 9 | |
 | Р10 | DB9 | 1 | |
+
+### Передняя панель
+
+<img src="assets/front1.jpg"></img>
+
+### Вид спереди в корпусе
+
+<img src="assets/front2.jpg"></img>
+
+### Задняя панель
+
+<img src="assets/back1.jpeg"></img>
+
+## Основная плата v1.0.0
+
+### Схема антенной секции
+
+<img src="hw/ANT.png"></img>
+
+### Схема процессорной секции
+
+<img src="hw/CPU.png"></img>
+
+### Схема секции источник питания
+
+<img src="hw/FEM.png"></img>
+
+### Схема секции фильтров
+
+<img src="hw/FILTERS.png"></img>
+
+### Схема секции усилителя
+
+<img src="hw/PA.png"></img>
+
+### Схема секции приёмника
+
+<img src="hw/RX.png"></img>
+
+### Топология платы лицевая сторона
+
+<img src="hw/8B_TOP.png"></img>
+
+### Топология платы обратная сторонв
+
+<img src="hw/8B_BOT.png"></img>
 
 ## Корпус
 
@@ -42,7 +92,15 @@ https://fonts.google.com/specimen/B612
 
 ## Фото устройства
 
-<img src="assets/photo1.jpg"></img>
+<img src="assets/XAPOH N4h.jpg"></img>
+
+<img src="assets/XAPOH25.jpeg"></img>
+
+<img src="assets/XAPOH N4e.jpg"></img>
+
+## Преречень элементов
+
+hw/8B_PE.doc
 
 ## License
 
