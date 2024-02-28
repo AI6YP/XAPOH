@@ -1,6 +1,6 @@
 <p align="right"><a href="https://certification.oshwa.org/by000001.html"><img src="assets/certification-mark-BY000001-wide.svg"/></a></p>
 
-# Спутник Плутона -- Харон.
+# Спутник Плутона -- ХАРОН
 
 Предварительные каскады для Analog Devices ADALM-PLUTO SDR.
 
