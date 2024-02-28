@@ -105,7 +105,7 @@ https://fonts.google.com/specimen/B612
 
 <img src="assets/XAPOH N4e.jpg"></img>
 
-## Преречень элементов
+## Перечень элементов
 
 hw/8B_PE.doc
 
