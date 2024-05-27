@@ -1,0 +1,19 @@
+{
+  "name": "xapoh-knob",
+  "version": "0.1.0",
+  "description": "",
+  "main": "body.js",
+  "scripts": {
+    "test": "eslint body.js"
+  },
+  "author": "",
+  "license": "MIT",
+  "eslintConfig": {
+    "extends": "@drom/eslint-config/eslint8/node12"
+  },
+  "devDependencies": {
+    "@drom/eslint-config": "^0.12.0",
+    "@jscad/stl-serializer": "^2.1.12",
+    "commander": "^9"
+  }
+}
