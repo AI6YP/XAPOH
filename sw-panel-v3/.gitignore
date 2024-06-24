@@ -1,0 +1,5 @@
+build
+sdkconfig
+secrets.h
+node_modules
+package-lock.json

@@ -1,0 +1,25 @@
+{
+  "name": "xapoh",
+  "version": "1.0.0",
+  "description": "Web XAPOH",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "eslint lib"
+  },
+  "author": "AI6YP",
+  "license": "MIT",
+  "devDependencies": {
+    "@drom/eslint-config": "^0.12.0",
+    "browserify": "^17.0.0",
+    "eslint": "^8.54.0",
+    "onml": "^2.1.0",
+    "terser": "^5.24.0"
+  },
+  "eslintConfig": {
+    "extends": "@drom/eslint-config/eslint8/node12"
+  }
+}
