@@ -12,7 +12,6 @@
 #include "nvs_flash.h"
 
 #include "driver/gpio.h"
-#include "driver/spi_master.h"
 #include "driver/i2c_master.h"
 
 // WIFI
@@ -50,6 +49,12 @@
 #define SW1_A         22  // pin27  ->
 #define IR            23  // pin28  ->
 
+#define LCD_HOST SPI2_HOST
+
+static const char *TAG = "XAPOH";
+
+#include "lcd.h"
+
 /* FreeRTOS event group to signal when we are connected*/
 static EventGroupHandle_t s_wifi_event_group;
 
@@ -59,12 +64,11 @@ static EventGroupHandle_t s_wifi_event_group;
 #define WIFI_CONNECTED_BIT BIT0
 #define WIFI_FAIL_BIT      BIT1
 
-static spi_device_handle_t spi;
+
 static i2c_master_bus_config_t i2c_master;
 static i2c_device_config_t i2c_dev0;
 static i2c_device_config_t i2c_dev1;
 
-static const char *TAG = "wifi station";
 
 static int s_retry_num = 0;
 
@@ -97,9 +101,8 @@ i2c_device_config_t dev_cfg_2 = {
 
 i2c_master_dev_handle_t dev_handle_2;
 
-static void event_handler(
-  void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data
-) {
+
+static void event_handler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data) {
   if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START) {
      esp_wifi_connect();
   } else
@@ -120,67 +123,6 @@ static void event_handler(
   }
 }
 
-// https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/api-reference/peripherals/spi_master.html
-
-void lcd_spi_pre_transfer_callback(spi_transaction_t *t) {
-  int dc = (int)t->user;
-  gpio_set_level(DISPLAY_RS, dc);
-}
-
-void lcd_cmd(spi_device_handle_t spi, const uint8_t cmd, bool keep_cs_active) {
-  esp_err_t ret;
-  spi_transaction_t t;
-  memset(&t, 0, sizeof(t));       // Zero out the transaction
-  t.length = 8;                   // Command is 8 bits
-  t.tx_buffer = &cmd;             // The data is the cmd itself
-  t.user = (void*)0;              // D/C needs to be set to 0
-  if (keep_cs_active) {
-    t.flags = SPI_TRANS_CS_KEEP_ACTIVE;   //Keep CS active after data transfer
-  }
-  ret = spi_device_polling_transmit(spi, &t);  // Transmit!
-  assert(ret == ESP_OK);            //Should have had no issues.
-}
-
-void lcd_data(spi_device_handle_t spi, const uint8_t *data, int len) {
-  if (len == 0) return;           // no need to send anything
-  esp_err_t ret;
-  spi_transaction_t t;
-  memset(&t, 0, sizeof(t));       // Zero out the transaction
-  t.length = len * 8;             // Len is in bytes, transaction length is in bits.
-  t.tx_buffer = data;             // Data
-  t.user = (void*)1;              // D/C needs to be set to 1
-  ret = spi_device_polling_transmit(spi, &t); // Transmit!
-  assert(ret == ESP_OK);          //Should have had no issues.
-}
-
-void wait_while(int16_t busy) {
-  while (gpio_get_level(busy)) {
-    vTaskDelay(10 / portTICK_PERIOD_MS); // 10ms polling
-  };
-}
-
-void play_seq(spi_device_handle_t spi, int16_t busy, const uint8_t *seq) {
-  size_t idx = 0;
-  while (1) {
-    const uint8_t cmd = seq[idx];
-    idx += 1;
-    if (cmd == 0) {
-      break;
-    }
-    if (cmd == 0xff) {
-      lcd_cmd(spi, seq[idx], false);
-      idx += 1;
-      continue;
-    }
-    if (cmd == 0xfe) {
-      wait_while(busy);
-      continue;
-    }
-    lcd_data(spi, &seq[idx], cmd);
-    idx += cmd;
-  }
-}
-
 // I2C master
 
 void rdwr_i2c(i2c_master_bus_config_t i2c_master, uint8_t *tx_data, uint8_t *rx_data, int length) {
@@ -190,11 +132,13 @@ void rdwr_i2c(i2c_master_bus_config_t i2c_master, uint8_t *tx_data, uint8_t *rx_
     ESP_LOGI(TAG, "%x", tx_data[i]);
   }
 
-  ESP_ERROR_CHECK(i2c_master_transmit(
+  if (i2c_master_transmit(
     tx_data[0] ? dev_handle_2 : dev_handle_1,
     tx_data + 1,
     length - 1, -1
-  ));
+  ) != ESP_OK) {
+    ESP_LOGI(TAG, "I2C Error");
+  };
 
   // spi_device_acquire_bus(spi, portMAX_DELAY);
 
@@ -374,10 +318,10 @@ httpd_handle_t start_webserver() {
 
   /* Start the httpd server */
   if (httpd_start(&server, &config) == ESP_OK) {
-      /* Register URI handlers */
-      httpd_register_uri_handler(server, &uri_get);
-      httpd_register_uri_handler(server, &msg_get);
-      httpd_register_uri_handler(server, &msg_post);
+    /* Register URI handlers */
+    httpd_register_uri_handler(server, &uri_get);
+    httpd_register_uri_handler(server, &msg_get);
+    httpd_register_uri_handler(server, &msg_post);
   }
   /* If server failed to start, handle will be NULL */
   return server;
@@ -400,6 +344,14 @@ void app_main(void) {
   ESP_ERROR_CHECK(i2c_new_master_bus(&i2c_mst_config, &bus_handle));
   ESP_ERROR_CHECK(i2c_master_bus_add_device(bus_handle, &dev_cfg_1, &dev_handle_1));
   ESP_ERROR_CHECK(i2c_master_bus_add_device(bus_handle, &dev_cfg_2, &dev_handle_2));
+
+  uint8_t default0 [] = {0, 0, 6, 125};
+  uint8_t default1 [] = {1, 0, 8, 4};
+  rdwr_i2c(i2c_master, default0, default0, 4);
+  rdwr_i2c(i2c_master, default1, default1, 4);
+
+  // SPI LCD
+  lcd_init(spi);
 
   wifi_init_sta();
   start_webserver();

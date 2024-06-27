@@ -1,30 +1,36 @@
 'use strict';
 
+const pkg = require('../package.json');
 const stringify = require('onml/stringify.js');
+
+const sendGpio = (socket, config) => {
+  console.log(config);
+  socket.send(Uint8Array.from([0, 0, config.gpios[0], config.gpios[1]]));
+  socket.send(Uint8Array.from([1, 0, config.gpios[2], config.gpios[3]]));
+};
 
 global.XAPOH = async (divName) => {
   let t0;
   const content = document.getElementById(divName);
 
-  // p2k groups
-  // const btns = [
-  //   {id: 'btn_start', label: 'Start', cmd: 0},
-  //   {id: 'btn_stop',  label: 'Stop',  cmd: 1},
-  //   {id: 'btn_pause', label: 'Pause', cmd: 2}
-  // ];
+  const font = new FontFace('Iosevka Drom', 'url(https://vc.drom.io/IosevkaDrom-Regular.woff2)');
+  document.fonts.add(font);
+  await font.load();
 
   const ml = (state) => ['div', {class: 'xapohapp'},
     ['h1', 'XAPOH'],
     ['div', {class: 'configs'},
       ...state.configs.flatMap((config, i) => [
         ['input', {id: `send_cfg${i}`, class: 'btn_item', type: 'button', value: config.name}],
-        ['span',  {class: 'item'}, config.gpios.join('.')],
-        ['input', {class: 'btn_item del', type: 'button', value: '\u2715'}]
+        // ['input', {class: 'item', type: 'text', value: config.gpios.join('.')}],
+        ['div', {class: 'item'}, config.gpios.join('.')],
+        // ['input', {class: 'btn_item del', type: 'button', value: '\u2715'}]
       ]),
-      ['input', {class: 'num_item', type: 'text'}],
-      ['input', {class: 'num_item', type: 'text'}],
-      ['input', {class: 'btn_item add', type: 'button', value: '+'}]
-    ]
+      // ['input', {class: 'num_item', type: 'text'}],
+      // ['input', {class: 'num_item', type: 'text'}],
+      // ['input', {class: 'btn_item add', type: 'button', value: '+'}]
+    ],
+    ['div', {class: 'tiny'}, pkg.version]
   ];
   // btns.map(btno => {
   //   ml.push(['button', {id: btno.id}, btno.label]);
@@ -55,38 +61,6 @@ global.XAPOH = async (divName) => {
     });
   });
 
-  state.configs.map((config, i) => {
-    const id = `send_cfg${i}`;
-    const el = document.getElementById(id);
-    el.addEventListener('click', (event) => {
-      console.log(config);
-      socket.send(Uint8Array.from([0, 0, config.gpios[0], config.gpios[1]]));
-      socket.send(Uint8Array.from([1, 0, config.gpios[2], config.gpios[3]]));
-    });
-  });
-
-  // const elo = ['i2c_address', 'i2c_data', 'i2c_send'].reduce((res, id) => {
-  //   res[id] = document.getElementById(id);
-  //   return res;
-  // }, {});
-
-  // elo.i2c_send.addEventListener('click', (event) => {
-  //   const arr = elo.i2c_data.value.split(',').map(e => Number(e));
-  //   const txMessage = Uint8Array.from([
-  //     Number(elo.i2c_address.value),
-  //     ...arr
-  //   ]);
-  //   console.log(txMessage);
-  //   socket.send(txMessage);
-  // });
-
-  // btns.map(btno => {
-  //   document.getElementById(btno.id).addEventListener('click', (event) => {
-  //     console.log(btno.label, event);
-  //     socket.send(btno.cmd);
-  //   });
-  // });
-
   // Listen for messages
   socket.addEventListener('message', (event) => {
     const u8 = new Uint8Array(event.data);
@@ -96,6 +70,14 @@ global.XAPOH = async (divName) => {
     }
     str += '>';
     console.log('Message from server: ' + str + ' (' + (performance.now() - t0) + ')');
+  });
+
+  state.configs.map((config, i) => {
+    const id = `send_cfg${i}`;
+    const el = document.getElementById(id);
+    el.addEventListener('click', () => {
+      sendGpio(socket, config);
+    });
   });
 
   global.SOCKET = {
