@@ -42,6 +42,12 @@ void onWrite(uint8_t reg, uint8_t length) {
 
 int main () {
   SystemInit();
+
+  RCC->CFGR0 = RCC_HPRE_DIV16; // PLLCLK = HCLK = SYSCLK = APB1
+  RCC->CTLR  = RCC_HSION;
+  // (((FUNCONF_HSITRIM) << 3) | RCC_HSION | HSEBYP | RCC_CSS) | RCC_HSION; // Use HSI, Only.
+
+
   funGpioInitAll();
 
   funPinMode(PD4, GPIO_Speed_50MHz | GPIO_CNF_OUT_PP); // 1 LED
@@ -82,7 +88,10 @@ int main () {
   // blink();
   // copypin();
 
-  while (1) { Delay_Ms(250); }
+  while (1) {
+    __WFE();
+    // Delay_Ms(250);
+  }
 
   return 0;
 }
