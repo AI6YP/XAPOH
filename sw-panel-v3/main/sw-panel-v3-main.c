@@ -13,6 +13,9 @@
 
 #include "driver/gpio.h"
 #include "driver/i2c_master.h"
+#include "driver/rmt_tx.h"
+
+#include "led_strip_encoder.h"
 
 // WIFI
 #include "esp_wifi.h"
@@ -27,6 +30,11 @@
 
 #include "pages.h"
 
+#define RMT_LED_STRIP_RESOLUTION_HZ 10000000 // 10MHz resolution, 1 tick = 0.1us (led strip needs a high resolution)
+#define RMT_LED_STRIP_GPIO_NUM      8
+
+#define NUM_LEDS 11
+
 // pins
 #define PWR_SW        0   // pin6   <-
 #define FUZE_IN       1   // pin7   -> ADC?
@@ -36,7 +44,7 @@
 #define ON            5   // pin11  <-
 #define DISPLAY_RS    6   // pin12  <-
 #define DISPLAY_CS    7   // pin13  <-
-#define DISPLAY_CLOCK 8   // pin14  <-
+#define RGB           8   // pin14  <- LED Strip
 #define BOOT          9   // pin15  ->
 #define DISPLAY_DATA  14  // pin18  <-
 #define DISPLAY_RESET 15  // pin19  <-
@@ -53,7 +61,8 @@
 
 static const char *TAG = "XAPOH";
 
-#include "lcd.h"
+
+// #include "lcd.h"
 
 /* FreeRTOS event group to signal when we are connected*/
 static EventGroupHandle_t s_wifi_event_group;
@@ -64,11 +73,26 @@ static EventGroupHandle_t s_wifi_event_group;
 #define WIFI_CONNECTED_BIT BIT0
 #define WIFI_FAIL_BIT      BIT1
 
+struct pixels_s {
+  uint8_t data[NUM_LEDS * 3];
+  // rmt_channel_handle_t led_chan; // = NULL;
+  // rmt_encoder_handle_t led_encoder;
+  // rmt_transmit_config_t tx_config;
+};
+typedef struct pixels_s pixels_t;
+
+
+
 
 static i2c_master_bus_config_t i2c_master;
 static i2c_device_config_t i2c_dev0;
 static i2c_device_config_t i2c_dev1;
 
+static pixels_t pixels;
+static rmt_channel_handle_t led_chan = NULL;
+static rmt_encoder_handle_t led_encoder0 = NULL;
+
+rmt_transmit_config_t tx_config = { .loop_count = 0, };
 
 static int s_retry_num = 0;
 
@@ -233,6 +257,11 @@ esp_err_t msg_handler(httpd_req_t *req) {
   httpd_ws_frame_t ws_pkt;
   uint8_t *buf = NULL;
   uint8_t *tx_buf = NULL;
+  rmt_encoder_handle_t led_encoder = NULL;
+  led_strip_encoder_config_t encoder_config = {
+    .resolution = RMT_LED_STRIP_RESOLUTION_HZ,
+  };
+
   memset(&ws_pkt, 0, sizeof(httpd_ws_frame_t));
   ws_pkt.type = HTTPD_WS_TYPE_BINARY;
   /* Set max_len = 0 to get the frame len */
@@ -260,7 +289,14 @@ esp_err_t msg_handler(httpd_req_t *req) {
       free(buf);
       return ret;
     }
-    rdwr_i2c(i2c_master, buf, tx_buf, ws_pkt.len);
+    if (buf[0] == 255) { // RGB LEDS
+      ESP_LOGI(TAG, "pkt_len: %d", ws_pkt.len);
+      memcpy(&pixels.data, buf + 1, ws_pkt.len - 1);
+      ESP_ERROR_CHECK(rmt_transmit(led_chan, led_encoder0, pixels.data, sizeof(pixels.data), &tx_config));
+      ESP_ERROR_CHECK(rmt_tx_wait_all_done(led_chan, portMAX_DELAY));
+    } else {
+      rdwr_i2c(i2c_master, buf, tx_buf, ws_pkt.len);
+    }
     ws_pkt.payload = tx_buf;
   }
   // ESP_LOGI(TAG, "Packet type: %d", ws_pkt.type);
@@ -350,8 +386,44 @@ void app_main(void) {
   rdwr_i2c(i2c_master, default0, default0, 4);
   rdwr_i2c(i2c_master, default1, default1, 4);
 
+  // RGB init
+  ESP_LOGI(TAG, "Create RMT TX channel");
+  rmt_tx_channel_config_t tx_chan_config = {
+      .clk_src = RMT_CLK_SRC_DEFAULT, // select source clock
+      .gpio_num = RMT_LED_STRIP_GPIO_NUM,
+      .mem_block_symbols = 64, // increase the block size can make the LED less flickering
+      .resolution_hz = RMT_LED_STRIP_RESOLUTION_HZ,
+      .trans_queue_depth = 4, // set the number of transactions that can be pending in the background
+  };
+  ESP_ERROR_CHECK(rmt_new_tx_channel(&tx_chan_config, &led_chan));
+
+
+  ESP_LOGI(TAG, "Install led strip encoder");
+  rmt_encoder_handle_t led_encoder = NULL;
+  led_strip_encoder_config_t encoder_config = {
+    .resolution = RMT_LED_STRIP_RESOLUTION_HZ,
+  };
+  ESP_ERROR_CHECK(rmt_new_led_strip_encoder(&encoder_config, &led_encoder));
+  led_encoder0 = led_encoder;
+
+  ESP_LOGI(TAG, "Enable RMT TX channel");
+  ESP_ERROR_CHECK(rmt_enable(led_chan));
+
+  // rmt_transmit_config_t tx_config = {
+  //   .loop_count = 0, // no transfer loop
+  // };
+
+  pixels = (pixels_t) { .data = {
+    0, 0, 5,    // r g b
+    100,0, 0,    // G R B
+  }};
+
+  ESP_ERROR_CHECK(rmt_transmit(led_chan, led_encoder0, pixels.data, sizeof(pixels.data), &tx_config));
+  ESP_ERROR_CHECK(rmt_tx_wait_all_done(led_chan, portMAX_DELAY));
+
+
   // SPI LCD
-  lcd_init(spi);
+  // lcd_init(spi);
 
   wifi_init_sta();
   start_webserver();

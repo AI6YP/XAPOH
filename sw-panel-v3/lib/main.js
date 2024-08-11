@@ -5,8 +5,9 @@ const stringify = require('onml/stringify.js');
 
 const sendGpio = (socket, config) => {
   console.log(config);
-  socket.send(Uint8Array.from([0, 0, config.gpios[0], config.gpios[1]]));
-  socket.send(Uint8Array.from([1, 0, config.gpios[2], config.gpios[3]]));
+  socket.send(Uint8Array.from([0,   0, config.gpios[0], config.gpios[1]]));
+  socket.send(Uint8Array.from([1,   0, config.gpios[2], config.gpios[3]]));
+  socket.send(Uint8Array.from([255].concat(config.gpios.slice(4))));
 };
 
 global.XAPOH = async (divName) => {
@@ -23,12 +24,13 @@ global.XAPOH = async (divName) => {
       ...state.configs.flatMap((config, i) => [
         ['input', {id: `send_cfg${i}`, class: 'btn_item', type: 'button', value: config.name}],
         // ['input', {class: 'item', type: 'text', value: config.gpios.join('.')}],
-        ['div', {class: 'item'}, config.gpios.join('.')],
+        // ['div', {class: 'item'}, config.gpios.join('.')],
         // ['input', {class: 'btn_item del', type: 'button', value: '\u2715'}]
       ]),
       // ['input', {class: 'num_item', type: 'text'}],
       // ['input', {class: 'num_item', type: 'text'}],
       // ['input', {class: 'btn_item add', type: 'button', value: '+'}]
+      // ['input', {id: 'send_lna', class: 'btn_item', type: 'button'}],
     ],
     ['div', {class: 'tiny'}, pkg.version]
   ];
@@ -37,15 +39,19 @@ global.XAPOH = async (divName) => {
   // });
 
   const state = {
-    configs: [
-      {name: '144',   gpios: [6,    125,  8,    4]},
-      {name: '432',   gpios: [66,   93,   16,   36]},
-      {name: '1296',  gpios: [38,   125,  16,   64]},
-      {name: '2400',  gpios: [102,  61,   20,   4]},
-      {name: 'SAT A', gpios: [5,    109,  10,   5]},
-      {name: 'SAT B', gpios: [10,   69,   18,   37]},
-      {name: 'SAT J', gpios: [6,    107,  10,   5]},
-      {name: 'SAT Q', gpios: [6,    60,   84,   4]},
+    configs: [//                I2C0        I2C1      / rgb 0 \   / GRB 1 \   / GRB 2 \   / GRB 3 \   / GRB 4 \   / GRB 5 \   / GRB 6 \   / GRB 7 \   / GRB 8 \   / GRB 9 \   / GRB 10\
+      {name: '144',   gpios: [6,    125,  8,    4,    0,  5,  0,  100,0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0]},
+      {name: '144+',  gpios: [6,    125,  8,    20,   0,  5,  0,  0,  0,100,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0]},
+      {name: '432',   gpios: [66,   93,   16,   36,   0,  5,  0,  0,  0,  0,  100,0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0]},
+      {name: '432+',  gpios: [66,   93,   16,   52,   0,  5,  0,  0,  0,  0,  0,  0,100,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0]},
+      {name: '1296',  gpios: [38,   125,  16,   64,   0,  5,  0,  0,  0,  0,  0,  0,  0,  100,0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0]},
+      {name: '1296+', gpios: [38,   125,  16,   80,   0,  5,  0,  0,  0,  0,  0,  0,  0,  0,  0,100,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0]},
+      {name: '2400',  gpios: [102,  61,   20,   4,    0,  5,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  100,0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0]},
+      {name: '2400+', gpios: [102,  61,   20,   20,   0,  5,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,100,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0]},
+      {name: 'SAT A', gpios: [5,    109,  10,   5,    0,  5,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  50, 100,0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0]},
+      {name: 'SAT B', gpios: [10,   69,   18,   37,   0,  5,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  100,0,100,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0]},
+      {name: 'SAT J', gpios: [6,    107,  10,   5,    0,  5,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  50, 100,0,  0,  0,  0,  0,  0,  0,  0,  0,  0]},
+      {name: 'SAT Q', gpios: [6,    60,   84,   4,    0,  5,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  100,0,100,  0,  0,  0,  0,  0,  0]},
     ]
   };
 

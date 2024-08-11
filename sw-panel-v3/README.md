@@ -9,14 +9,14 @@ git pull
 git submodule update --init --recursive
 ./install.sh esp32c6
 
-cd ~/work/github/XAPOH/sw-panel-v3
+cd ~/work/github/AI6YP/XAPOH/sw-panel-v3
 . ~/work/github/espressif/esp-idf/export.sh
 
 idf.py set-target esp32c6
 
 idf.py build # just build
 
-idf.py -p /dev/ttyUSB0 flash # build & flash
+idf.py -p /dev/ttyACM0 flash # build & flash
 
-idf.py -p /dev/ttyUSB0 flash monitor # build & flash & monitor -> exit Ctrl+]
+idf.py -p /dev/ttyACM0 flash monitor # build & flash & monitor -> exit Ctrl+]
 ```

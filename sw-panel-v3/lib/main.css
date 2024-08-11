@@ -30,7 +30,9 @@ body {
   background-color: #088;
   color: #fff;
   border: 0;
-  font-size: 24px;
+  padding: 16px;
+  margin: 8px;
+  font-size: 32px;
   /* line-height: 2.5; */
   /* padding: 0 20px; */
   text-shadow: 1px 1px 1px #000;
@@ -77,6 +79,6 @@ h1 {
 .configs {
   display: grid;
   grid-template-columns: 50% 50%; /* 10%; */
-  grid-row-gap: 16px;
+  /* grid-row-gap: 16px; */
 }
 
