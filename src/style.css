@@ -1,0 +1,44 @@
+@import url("observablehq:default.css");
+@import url("observablehq:theme-air.css");
+@import url("observablehq:theme-ink.css");
+@import url("observablehq:theme-wide.css");
+@import url('./xterm.css');
+
+@font-face {
+  font-family: 'Iosevka Drom Web';
+  font-display: swap;
+  font-weight: 400;
+  font-stretch: normal;
+  font-style: normal;
+  src: url("https://vc.drom.io/IosevkaDrom-Regular.woff2") format('woff2');
+}
+
+@font-face {
+  font-family: 'Iosevka Drom Web';
+  font-display: swap;
+  font-weight: 400;
+  font-stretch: normal;
+  font-style: oblique;
+  src: url('https://vc.drom.io/IosevkaDrom-Oblique.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Iosevka Drom Web Oblique';
+  font-display: swap;
+  font-weight: 400;
+  font-stretch: normal;
+  src: url('https://vc.drom.io/IosevkaDrom-Oblique.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Iosevka Drom Web';
+  font-display: swap;
+  font-weight: 400;
+  font-stretch: normal;
+  font-style: italic;
+  src: url('https://vc.drom.io/IosevkaDrom-Italic.woff2') format('woff');
+}
+
+body {
+  font-family: Roboto, Sans;
+}
