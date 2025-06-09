@@ -15,10 +15,15 @@
 <link rel="modulepreload" href="./_observablehq/client.3ebfe146.js">
 <link rel="modulepreload" href="./_observablehq/runtime.e080113b.js">
 <link rel="modulepreload" href="./_observablehq/stdlib.77413487.js">
-<link rel="modulepreload" href="./_import/components/esp-install.8646c2e4.js">
+<link rel="modulepreload" href="./_import/components/config-editor.7e3cc79f.js">
+<link rel="modulepreload" href="./_import/components/esp-install.da0427da.js">
 <link rel="modulepreload" href="./_npm/htl@0.3.1/72f4716c.js">
 <link rel="modulepreload" href="./_observablehq/stdlib/inputs.6dd24f34.js">
-<link rel="modulepreload" href="./_import/components/bins.56fa79a6.js">
+<link rel="modulepreload" href="./_npm/@codemirror/lang-javascript@6.2.4/a5496f81.js">
+<link rel="modulepreload" href="./_npm/@codemirror/view@6.37.1/684337d2.js">
+<link rel="modulepreload" href="./_npm/codemirror@6.0.1/91a94040.js">
+<link rel="modulepreload" href="./_npm/@codemirror/theme-one-dark@6.1.2/58e50fbc.js">
+<link rel="modulepreload" href="./_import/components/bins.427b4f8c.js">
 <link rel="modulepreload" href="./_import/components/t2pt.630cedce.js">
 <link rel="modulepreload" href="./_npm/js-md5@0.8.3/2eae20c2.js">
 <link rel="modulepreload" href="./_npm/esptool-js@0.5.5/bbcc8c77.js">
@@ -26,17 +31,31 @@
 <link rel="modulepreload" href="./_npm/@xterm/addon-fit@0.10.0/1861e560.js">
 <link rel="modulepreload" href="./_npm/@xterm/addon-clipboard@0.1.0/87a517fc.js">
 <link rel="modulepreload" href="./_npm/isoformat@0.2.1/18cbf477.js">
+<link rel="modulepreload" href="./_npm/@lezer/javascript@1.5.1/2f4a977f.js">
+<link rel="modulepreload" href="./_npm/@codemirror/language@6.11.1/34d7ef7e.js">
+<link rel="modulepreload" href="./_npm/@codemirror/state@6.5.2/2a3beb31.js">
+<link rel="modulepreload" href="./_npm/@codemirror/autocomplete@6.18.6/10c7bc1e.js">
+<link rel="modulepreload" href="./_npm/@lezer/common@1.2.3/e55151ed.js">
+<link rel="modulepreload" href="./_npm/style-mod@4.1.2/76042ac1.js">
+<link rel="modulepreload" href="./_npm/w3c-keyname@2.2.8/81256f23.js">
+<link rel="modulepreload" href="./_npm/crelt@1.0.6/a1a6363f.js">
+<link rel="modulepreload" href="./_npm/@codemirror/commands@6.8.1/8407b0a0.js">
+<link rel="modulepreload" href="./_npm/@codemirror/search@6.5.11/bac2980d.js">
+<link rel="modulepreload" href="./_npm/@codemirror/lint@6.8.5/9985110a.js">
+<link rel="modulepreload" href="./_npm/@lezer/highlight@1.2.1/16ed304f.js">
 <link rel="modulepreload" href="./_npm/pako@2.1.0/3619a111.js">
 <link rel="modulepreload" href="./_npm/atob-lite@2.0.0/e23c68a8.js">
+<link rel="modulepreload" href="./_npm/@lezer/lr@1.4.2/261f1723.js">
+<link rel="modulepreload" href="./_npm/@marijn/find-cluster-break@1.0.2/653b4cd1.js">
 <script type="module">
 
 import {define} from "./_observablehq/client.3ebfe146.js";
 
-define({id: "f0b4df60", outputs: ["Mutable","onEspConnectClick","onResetClick","onProgramClick","onProgressBar","xterm","xterm0"], body: async () => {
-const [{Mutable}, {onEspConnectClick, onResetClick, onProgramClick, onProgressBar, xterm}] = await Promise.all([import("./_observablehq/stdlib.77413487.js"), import("./_import/components/esp-install.8646c2e4.js")]);
+define({id: "4470d7fc", outputs: ["Mutable","configEditor","onEspConnectClick","onResetClick","onProgramClick","onProgressBar","xterm","xterm0"], body: async () => {
+const [{Mutable}, {configEditor}, {onEspConnectClick, onResetClick, onProgramClick, onProgressBar, xterm}] = await Promise.all([import("./_observablehq/stdlib.77413487.js"), import("./_import/components/config-editor.7e3cc79f.js"), import("./_import/components/esp-install.da0427da.js")]);
 
 const xterm0 = xterm();
-return {Mutable,onEspConnectClick,onResetClick,onProgramClick,onProgressBar,xterm,xterm0};
+return {Mutable,configEditor,onEspConnectClick,onResetClick,onProgramClick,onProgressBar,xterm,xterm0};
 }});
 
 define({id: "e1cd8263", inputs: ["view","Inputs","html","onEspConnectClick","xterm0"], outputs: ["esp"], body: (view,Inputs,html,onEspConnectClick,xterm0) => {
@@ -55,8 +74,12 @@ const resetButton = view(Inputs.button('Reset', {
 return {resetButton};
 }});
 
-define({id: "0b5a88e9", inputs: ["view","Inputs","esp","onProgramClick"], outputs: ["programButton"], body: (view,Inputs,esp,onProgramClick) => {
-const programButton = view(Inputs.button('Program Firmware v2025.06.08', {
+define({id: "0ba24c68", inputs: ["view","configEditor"], body: (view,configEditor) => {
+view(configEditor());
+}});
+
+define({id: "4f9d196c", inputs: ["view","Inputs","esp","onProgramClick"], outputs: ["programButton"], body: (view,Inputs,esp,onProgramClick) => {
+const programButton = view(Inputs.button('Program Firmware v2025.06.09', {
   disabled: (esp === null),
   value: null,
   reduce: () =>
@@ -108,18 +131,19 @@ xterm0.div
 <script>{const e=document.querySelector("#observablehq-sidebar"),o=document.querySelector("#observablehq-sidebar-toggle"),r=sessionStorage.getItem("observablehq-sidebar");r?o.checked=r==="true":o.indeterminate=!0;for(const t of document.querySelectorAll("#observablehq-sidebar summary")){const s=t.parentElement;switch(sessionStorage.getItem(`observablehq-sidebar:${t.textContent}`)){case"true":s.open=!0;break;case"false":s.classList.contains("observablehq-section-active")||(s.open=!1);break}}addEventListener("beforeunload",()=>sessionStorage.setItem("observablehq-sidebar-scrolly",`${e.scrollTop}`));const a=sessionStorage.getItem("observablehq-sidebar-scrolly");a!=null&&(e.style.cssText="overflow: hidden;",e.scrollTop=+a,e.style.cssText="");}</script>
 <div id="observablehq-center">
 <main id="observablehq-main" class="observablehq">
-<div class="observablehq observablehq--block"><!--:f0b4df60:--></div>
+<div class="observablehq observablehq--block"><!--:4470d7fc:--></div>
 <h1 id="install-software" tabindex="-1"><a class="observablehq-header-anchor" href="#install-software">Install software</a></h1>
 <div class="observablehq observablehq--block"><!--:e1cd8263:--></div>
 <div class="observablehq observablehq--block"><!--:c929934b:--></div>
-<div class="observablehq observablehq--block"><!--:0b5a88e9:--></div>
+<div class="observablehq observablehq--block"><!--:0ba24c68:--></div>
+<div class="observablehq observablehq--block"><!--:4f9d196c:--></div>
 <div class="observablehq observablehq--block"><!--:2485a3d5:--></div>
 <p><observablehq-loading></observablehq-loading><!--:15e2ab7c:--> : <observablehq-loading></observablehq-loading><!--:de94ae3f:-->%</p>
 <div class="observablehq observablehq--block"><observablehq-loading></observablehq-loading><!--:23b456f6:--></div>
 </main>
 <footer id="observablehq-footer">
 <nav><a rel="prev" href="./"><span>XAPOH</span></a></nav>
-<div>Built with <a href="https://observablehq.com/" target="_blank" rel="noopener noreferrer">Observable</a> on <a title="2025-06-08T12:08:07">Jun 8, 2025</a>.</div>
+<div>Built with <a href="https://observablehq.com/" target="_blank" rel="noopener noreferrer">Observable</a> on <a title="2025-06-09T15:13:24">Jun 9, 2025</a>.</div>
 </footer>
 </div>
 </body>
