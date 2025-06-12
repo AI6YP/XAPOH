@@ -15,15 +15,15 @@
 <link rel="modulepreload" href="./_observablehq/client.3ebfe146.js">
 <link rel="modulepreload" href="./_observablehq/runtime.e080113b.js">
 <link rel="modulepreload" href="./_observablehq/stdlib.77413487.js">
+<link rel="modulepreload" href="./_import/components/bins.e6a39dc2.js">
 <link rel="modulepreload" href="./_import/components/config-editor.348fae99.js">
-<link rel="modulepreload" href="./_import/components/esp-install.da0427da.js">
+<link rel="modulepreload" href="./_import/components/esp-install.19a72a85.js">
 <link rel="modulepreload" href="./_npm/htl@0.3.1/72f4716c.js">
 <link rel="modulepreload" href="./_observablehq/stdlib/inputs.6dd24f34.js">
 <link rel="modulepreload" href="./_npm/@codemirror/lang-javascript@6.2.4/a5496f81.js">
 <link rel="modulepreload" href="./_npm/@codemirror/view@6.37.1/684337d2.js">
 <link rel="modulepreload" href="./_npm/codemirror@6.0.1/91a94040.js">
 <link rel="modulepreload" href="./_npm/@codemirror/theme-one-dark@6.1.2/58e50fbc.js">
-<link rel="modulepreload" href="./_import/components/bins.427b4f8c.js">
 <link rel="modulepreload" href="./_import/components/t2pt.630cedce.js">
 <link rel="modulepreload" href="./_npm/js-md5@0.8.3/2eae20c2.js">
 <link rel="modulepreload" href="./_npm/esptool-js@0.5.5/bbcc8c77.js">
@@ -51,11 +51,11 @@
 
 import {define} from "./_observablehq/client.3ebfe146.js";
 
-define({id: "4470d7fc", outputs: ["Mutable","configEditor","onEspConnectClick","onResetClick","onProgramClick","onProgressBar","xterm","xterm0"], body: async () => {
-const [{Mutable}, {configEditor}, {onEspConnectClick, onResetClick, onProgramClick, onProgressBar, xterm}] = await Promise.all([import("./_observablehq/stdlib.77413487.js"), import("./_import/components/config-editor.348fae99.js"), import("./_import/components/esp-install.da0427da.js")]);
+define({id: "05c59d13", outputs: ["Mutable","bins","configEditor","onEspConnectClick","onResetClick","onProgramClick","onProgressBar","xterm","xterm0"], body: async () => {
+const [{Mutable}, {bins}, {configEditor}, {onEspConnectClick, onResetClick, onProgramClick, onProgressBar, xterm}] = await Promise.all([import("./_observablehq/stdlib.77413487.js"), import("./_import/components/bins.e6a39dc2.js"), import("./_import/components/config-editor.348fae99.js"), import("./_import/components/esp-install.19a72a85.js")]);
 
 const xterm0 = xterm();
-return {Mutable,configEditor,onEspConnectClick,onResetClick,onProgramClick,onProgressBar,xterm,xterm0};
+return {Mutable,bins,configEditor,onEspConnectClick,onResetClick,onProgramClick,onProgressBar,xterm,xterm0};
 }});
 
 define({id: "e1cd8263", inputs: ["view","Inputs","html","onEspConnectClick","xterm0"], outputs: ["esp"], body: (view,Inputs,html,onEspConnectClick,xterm0) => {
@@ -78,8 +78,8 @@ define({id: "0ba24c68", inputs: ["view","configEditor"], body: (view,configEdito
 view(configEditor());
 }});
 
-define({id: "4f9d196c", inputs: ["view","Inputs","esp","onProgramClick"], outputs: ["programButton"], body: (view,Inputs,esp,onProgramClick) => {
-const programButton = view(Inputs.button('Program Firmware v2025.06.09', {
+define({id: "0278bb49", inputs: ["view","Inputs","bins","esp","onProgramClick"], outputs: ["programButton"], body: (view,Inputs,bins,esp,onProgramClick) => {
+const programButton = view(Inputs.button('Program Firmware :' + bins[0].time, {
   disabled: (esp === null),
   value: null,
   reduce: () =>
@@ -131,19 +131,19 @@ xterm0.div
 <script>{const e=document.querySelector("#observablehq-sidebar"),o=document.querySelector("#observablehq-sidebar-toggle"),r=sessionStorage.getItem("observablehq-sidebar");r?o.checked=r==="true":o.indeterminate=!0;for(const t of document.querySelectorAll("#observablehq-sidebar summary")){const s=t.parentElement;switch(sessionStorage.getItem(`observablehq-sidebar:${t.textContent}`)){case"true":s.open=!0;break;case"false":s.classList.contains("observablehq-section-active")||(s.open=!1);break}}addEventListener("beforeunload",()=>sessionStorage.setItem("observablehq-sidebar-scrolly",`${e.scrollTop}`));const a=sessionStorage.getItem("observablehq-sidebar-scrolly");a!=null&&(e.style.cssText="overflow: hidden;",e.scrollTop=+a,e.style.cssText="");}</script>
 <div id="observablehq-center">
 <main id="observablehq-main" class="observablehq">
-<div class="observablehq observablehq--block"><!--:4470d7fc:--></div>
+<div class="observablehq observablehq--block"><!--:05c59d13:--></div>
 <h1 id="install-software" tabindex="-1"><a class="observablehq-header-anchor" href="#install-software">Install software</a></h1>
 <div class="observablehq observablehq--block"><!--:e1cd8263:--></div>
 <div class="observablehq observablehq--block"><!--:c929934b:--></div>
 <div class="observablehq observablehq--block"><!--:0ba24c68:--></div>
-<div class="observablehq observablehq--block"><!--:4f9d196c:--></div>
+<div class="observablehq observablehq--block"><!--:0278bb49:--></div>
 <div class="observablehq observablehq--block"><!--:2485a3d5:--></div>
 <p><observablehq-loading></observablehq-loading><!--:15e2ab7c:--> : <observablehq-loading></observablehq-loading><!--:de94ae3f:-->%</p>
 <div class="observablehq observablehq--block"><observablehq-loading></observablehq-loading><!--:23b456f6:--></div>
 </main>
 <footer id="observablehq-footer">
 <nav><a rel="prev" href="./"><span>XAPOH</span></a></nav>
-<div>Built with <a href="https://observablehq.com/" target="_blank" rel="noopener noreferrer">Observable</a> on <a title="2025-06-09T15:43:30">Jun 9, 2025</a>.</div>
+<div>Built with <a href="https://observablehq.com/" target="_blank" rel="noopener noreferrer">Observable</a> on <a title="2025-06-12T13:39:58">Jun 12, 2025</a>.</div>
 </footer>
 </div>
 </body>
