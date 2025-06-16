@@ -79,8 +79,8 @@ const cfg = view(configEditor());
 return {cfg};
 }});
 
-define({id: "1f41716d", inputs: ["view","Inputs","esp","onProgramClick","cfg"], outputs: ["programButton"], body: (view,Inputs,esp,onProgramClick,cfg) => {
-const programButton = view(Inputs.button('Program Firmware: ' + (new Date()).toISOString(), {
+define({id: "db253235", inputs: ["view","Inputs","bins","esp","onProgramClick","cfg"], outputs: ["programButton"], body: (view,Inputs,bins,esp,onProgramClick,cfg) => {
+const programButton = view(Inputs.button('Program Firmware: ' + bins[0].time, {
   disabled: (esp === null),
   value: null,
   reduce: () =>
@@ -137,14 +137,14 @@ xterm0.div
 <div class="observablehq observablehq--block"><!--:e1cd8263:--></div>
 <div class="observablehq observablehq--block"><!--:c929934b:--></div>
 <div class="observablehq observablehq--block"><!--:17798ff3:--></div>
-<div class="observablehq observablehq--block"><!--:1f41716d:--></div>
+<div class="observablehq observablehq--block"><!--:db253235:--></div>
 <div class="observablehq observablehq--block"><!--:2485a3d5:--></div>
 <p><observablehq-loading></observablehq-loading><!--:15e2ab7c:--> : <observablehq-loading></observablehq-loading><!--:de94ae3f:-->%</p>
 <div class="observablehq observablehq--block"><observablehq-loading></observablehq-loading><!--:23b456f6:--></div>
 </main>
 <footer id="observablehq-footer">
 <nav><a rel="prev" href="./"><span>XAPOH</span></a></nav>
-<div>Built with <a href="https://observablehq.com/" target="_blank" rel="noopener noreferrer">Observable</a> on <a title="2025-06-16T22:45:16">Jun 16, 2025</a>.</div>
+<div>Built with <a href="https://observablehq.com/" target="_blank" rel="noopener noreferrer">Observable</a> on <a title="2025-06-16T23:04:27">Jun 16, 2025</a>.</div>
 </footer>
 </div>
 </body>

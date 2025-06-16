@@ -34,7 +34,7 @@ const cfg = view(configEditor());
 ```
 
 ```js
-const programButton = view(Inputs.button('Program Firmware: ' + (new Date()).toISOString(), {
+const programButton = view(Inputs.button('Program Firmware: ' + bins[0].time, {
   disabled: (esp === null),
   value: null,
   reduce: () =>
