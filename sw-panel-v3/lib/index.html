@@ -1,3 +1,12 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 fill=%22grey%22 font-size=%2290%22>📡</text></svg>">
+<title>XAPOH</title>
+<script>document.XAPOH_VERSION = '2025-06-16T19:45:06.405Z';</script>
+<script>(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+(function (global){(function (){
 'use strict';
 
 const stringify = require('onml/stringify.js');
@@ -153,3 +162,191 @@ global.XAPOH = async (divName) => {
 };
 
 /* eslint-env browser */
+
+}).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"onml/stringify.js":2}],2:[function(require,module,exports){
+'use strict';
+
+const isObject = o => o && Object.prototype.toString.call(o) === '[object Object]';
+
+function indenter (indentation) {
+  if (!(indentation > 0)) {
+    return txt => txt;
+  }
+  var space = ' '.repeat(indentation);
+  return txt => {
+
+    if (typeof txt !== 'string') {
+      return txt;
+    }
+
+    const arr = txt.split('\n');
+
+    if (arr.length === 1) {
+      return space + txt;
+    }
+
+    return arr
+      .map(e => (e.trim() === '') ? e : space + e)
+      .join('\n');
+  };
+}
+
+const clean = txt => txt
+  .split('\n')
+  .filter(e => e.trim() !== '')
+  .join('\n');
+
+function stringify (a, indentation) {
+  const cr = (indentation > 0) ? '\n' : '';
+  const indent = indenter(indentation);
+
+  function rec(a) {
+    let body = '';
+    let isFlat = true;
+
+    let res;
+    const isEmpty = a.some((e, i, arr) => {
+      if (i === 0) {
+        res = '<' + e;
+        return (arr.length === 1);
+      }
+
+      if (i === 1) {
+        if (isObject(e)) {
+          Object.keys(e).map(key => {
+            let val = e[key];
+            if (Array.isArray(val)) {
+              val = val.join(' ');
+            }
+            res += ' ' + key + '="' + val + '"';
+          });
+          if (arr.length === 2) {
+            return true;
+          }
+          res += '>';
+          return;
+        }
+        res += '>';
+      }
+
+      switch (typeof e) {
+      case 'string':
+      case 'number':
+      case 'boolean':
+      case 'undefined':
+        body += e + cr;
+        return;
+      }
+
+      isFlat = false;
+      body += rec(e);
+    });
+
+    if (isEmpty) {
+      return res + '/>' + cr; // short form
+    }
+
+    return isFlat
+      ? res + clean(body) + '</' + a[0] + '>' + cr
+      : res + cr + indent(body) + '</' + a[0] + '>' + cr;
+  }
+
+  return rec(a);
+}
+
+module.exports = stringify;
+
+},{}]},{},[1]);
+</script>
+<style>body {
+  font-family: "Iosevka Drom";
+  font-size: 24px;
+  background-color: #222;
+  color: #eee;
+}
+
+.item {
+  background-color: #111;
+  color: #fff;
+  font-family: "Iosevka Drom";
+  font-size: 24px;
+  margin: 4px;
+  padding: 4px;
+}
+
+.num_item {
+  background-color: #333;
+  color: #5f5;
+  font-size: 24px;
+  border: 0;
+  padding: 4px;
+  margin: 4px;
+  line-height: 1;
+  border-radius: 5px;
+}
+
+.btn_item {
+  transition-duration: 0.4s;
+  background-color: #088;
+  color: #fff;
+  border: 0;
+  padding: 16px;
+  margin: 8px;
+  font-size: 32px;
+  /* line-height: 2.5; */
+  /* padding: 0 20px; */
+  text-shadow: 1px 1px 1px #000;
+  border-radius: 8px;
+  background-image: linear-gradient(to top left, rgb(0 0 0 / 20%), rgb(0 0 0 / 20%) 30%, rgb(0 0 0 / 0%));
+  box-shadow: inset 2px 2px 3px rgb(255 255 255 / 60%), inset -2px -2px 3px rgb(0 0 0 / 60%);
+}
+
+.btn_item.del {
+  background-color: #b00;
+}
+
+.btn_item.add {
+  background-color: #019603;
+}
+
+/*
+.btn_item:hover {
+  background-color: #00556d6a;
+}
+
+.btn_item.del:hover {
+  background-color: #f00;
+}
+
+.btn_item.add:hover {
+  background-color: #1fe301;
+}
+*/
+
+.btn_item:active {
+  background-image: linear-gradient(to top left, rgb(0 0 0 / 20%), rgb(0 0 0 / 20%) 30%, rgb(0 0 0 / 0%));
+  box-shadow: inset -2px -2px 3px rgb(255 255 255 / 60%), inset 2px 2px 3px rgb(0 0 0 / 60%);
+}
+
+h1 {
+  text-align: center;
+  margin: 0px;
+}
+
+.tiny {
+  text-align: center;
+  font-size: 14px;
+}
+
+.configs {
+  display: grid;
+  grid-template-columns: 50% 50%; /* 10%; */
+  /* grid-row-gap: 16px; */
+}
+
+</style>
+</head>
+<body onload="XAPOH('root')">
+<body><div id="root"></div></body>
+</html>

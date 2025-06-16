@@ -6,6 +6,8 @@ toc: false
 
 ```js
 import {Mutable} from "observablehq:stdlib";
+import {bins} from './components/bins.js';
+import {configEditor} from './components/config-editor.js';
 import {onEspConnectClick, onResetClick, onProgramClick, onProgressBar, xterm} from './components/esp-install.js';
 
 const xterm0 = xterm();
@@ -28,11 +30,15 @@ const resetButton = view(Inputs.button('Reset', {
 ```
 
 ```js
-const programButton = view(Inputs.button('Program Firmware v2025.06.08', {
+const cfg = view(configEditor());
+```
+
+```js
+const programButton = view(Inputs.button('Program Firmware: ' + (new Date()).toISOString(), {
   disabled: (esp === null),
   value: null,
   reduce: () =>
-    onProgramClick(esp)
+    onProgramClick(esp, cfg)
 }));
 ```
 

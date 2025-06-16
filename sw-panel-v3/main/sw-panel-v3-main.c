@@ -9,6 +9,7 @@
 #include "esp_log.h"
 #include "esp_event.h"
 #include "esp_system.h"
+#include "esp_partition.h"
 #include "nvs_flash.h"
 
 #include "driver/gpio.h"
@@ -25,7 +26,6 @@
 #include "lwip/err.h"
 #include "lwip/sys.h"
 
-#include "secrets.h"
 #include "sdkconfig.h"
 
 #include "pages.h"
@@ -61,7 +61,6 @@
 
 static const char *TAG = "XAPOH";
 
-
 // #include "lcd.h"
 
 /* FreeRTOS event group to signal when we are connected*/
@@ -73,22 +72,22 @@ static EventGroupHandle_t s_wifi_event_group;
 #define WIFI_CONNECTED_BIT BIT0
 #define WIFI_FAIL_BIT      BIT1
 
-struct pixels_s {
-  uint8_t data[NUM_LEDS * 3];
+struct app_context_s {
+  uint8_t pixels[NUM_LEDS * 3];
+  char * ssid;
+  char * password;
+  const void *config_ptr;
   // rmt_channel_handle_t led_chan; // = NULL;
   // rmt_encoder_handle_t led_encoder;
   // rmt_transmit_config_t tx_config;
 };
-typedef struct pixels_s pixels_t;
-
-
-
+typedef struct app_context_s app_context_t;
 
 static i2c_master_bus_config_t i2c_master;
-static i2c_device_config_t i2c_dev0;
-static i2c_device_config_t i2c_dev1;
+// static i2c_device_config_t i2c_dev0;
+// static i2c_device_config_t i2c_dev1;
 
-static pixels_t pixels;
+static app_context_t cntxt0;
 static rmt_channel_handle_t led_chan = NULL;
 static rmt_encoder_handle_t led_encoder0 = NULL;
 
@@ -124,7 +123,6 @@ i2c_device_config_t dev_cfg_2 = {
 };
 
 i2c_master_dev_handle_t dev_handle_2;
-
 
 static void event_handler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data) {
   if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START) {
@@ -184,7 +182,7 @@ void rdwr_i2c(i2c_master_bus_config_t i2c_master, uint8_t *tx_data, uint8_t *rx_
 
 }
 
-void wifi_init_sta() {
+void wifi_init_sta(app_context_t *cntxt) {
   s_wifi_event_group = xEventGroupCreate();
   ESP_ERROR_CHECK(esp_netif_init());
 
@@ -206,18 +204,36 @@ void wifi_init_sta() {
   ));
 
   wifi_config_t wifi_config = {
+    // 0
     .sta = {
-      .ssid = CONFIG_ESP_WIFI_SSID,
-      .password = CONFIG_ESP_WIFI_PASSWORD,
+      // .ssid = "eu2aa",
+      // .password = "mc067181",
        /* Authmode threshold resets to WPA2 as default if password matches WPA2 standards (pasword len => 8).
         * If you want to connect the device to deprecated WEP/WPA networks, Please set the threshold value
         * to WIFI_AUTH_WEP/WIFI_AUTH_WPA_PSK and set the password with length and format matching to
         * WIFI_AUTH_WEP/WIFI_AUTH_WPA_PSK standards.
         */
-      .threshold.authmode = WIFI_AUTH_WPA2_PSK, // ESP_WIFI_SCAN_AUTH_MODE_THRESHOLD,
+      // .threshold.authmode = WIFI_AUTH_WPA2_PSK, // ESP_WIFI_SCAN_AUTH_MODE_THRESHOLD,
       // .sae_pwe_h2e = WPA3_SAE_PWE_BOTH,
     },
   };
+
+  ESP_LOGI(TAG, "B1 [%s] : [%s]", wifi_config.sta.ssid, wifi_config.sta.password);
+
+  // ESP_LOGI(TAG, "B2 [%s] : [%s]", cntxt->ssid, cntxt->password);
+
+  memcpy(
+    &wifi_config.sta.ssid,
+    (char *)cntxt->config_ptr,
+    sizeof(wifi_config.sta.ssid)
+  );
+  memcpy(
+    &wifi_config.sta.password,
+    ((char *)cntxt->config_ptr) + 32,
+    sizeof(wifi_config.sta.password)
+  );
+
+  ESP_LOGI(TAG, "B2 [%s] : [%s]", wifi_config.sta.ssid, wifi_config.sta.password);
 
   ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA) );
   ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_config) );
@@ -234,9 +250,9 @@ void wifi_init_sta() {
   /* xEventGroupWaitBits() returns the bits before the call returned, hence we can test which event actually happened. */
 
   if (bits & WIFI_CONNECTED_BIT) {
-    ESP_LOGI(TAG, "connected to ap SSID:%s password:%s", CONFIG_ESP_WIFI_SSID, CONFIG_ESP_WIFI_PASSWORD);
+    ESP_LOGI(TAG, "connected to ap SSID:%s password:%s", wifi_config.sta.ssid, wifi_config.sta.password);
   } else if (bits & WIFI_FAIL_BIT) {
-    ESP_LOGI(TAG, "Failed to connect to SSID:%s, password:%s", CONFIG_ESP_WIFI_SSID, CONFIG_ESP_WIFI_PASSWORD);
+    ESP_LOGI(TAG, "Failed to connect to SSID:%s, password:%s", wifi_config.sta.ssid, wifi_config.sta.password);
   } else {
     ESP_LOGE(TAG, "UNEXPECTED EVENT");
   }
@@ -245,7 +261,7 @@ void wifi_init_sta() {
 esp_err_t index_get_handler(httpd_req_t *req) {
   /* Send a simple response */
   ESP_LOGI(TAG, "INDEX GET HANDLER");
-  httpd_resp_send(req, &PAGE_index, PAGE_index_length);
+  httpd_resp_send(req, PAGE_index, PAGE_index_length);
   return ESP_OK;
 }
 
@@ -257,10 +273,10 @@ esp_err_t msg_handler(httpd_req_t *req) {
   httpd_ws_frame_t ws_pkt;
   uint8_t *buf = NULL;
   uint8_t *tx_buf = NULL;
-  rmt_encoder_handle_t led_encoder = NULL;
-  led_strip_encoder_config_t encoder_config = {
-    .resolution = RMT_LED_STRIP_RESOLUTION_HZ,
-  };
+  // rmt_encoder_handle_t led_encoder = NULL;
+  // led_strip_encoder_config_t encoder_config = {
+  //   .resolution = RMT_LED_STRIP_RESOLUTION_HZ,
+  // };
 
   memset(&ws_pkt, 0, sizeof(httpd_ws_frame_t));
   ws_pkt.type = HTTPD_WS_TYPE_BINARY;
@@ -291,8 +307,8 @@ esp_err_t msg_handler(httpd_req_t *req) {
     }
     if (buf[0] == 255) { // RGB LEDS
       ESP_LOGI(TAG, "pkt_len: %d", ws_pkt.len);
-      memcpy(&pixels.data, buf + 1, ws_pkt.len - 1);
-      ESP_ERROR_CHECK(rmt_transmit(led_chan, led_encoder0, pixels.data, sizeof(pixels.data), &tx_config));
+      memcpy(&cntxt0.pixels, buf + 1, ws_pkt.len - 1);
+      ESP_ERROR_CHECK(rmt_transmit(led_chan, led_encoder0, cntxt0.pixels, sizeof(cntxt0.pixels), &tx_config));
       ESP_ERROR_CHECK(rmt_tx_wait_all_done(led_chan, portMAX_DELAY));
     } else {
       rdwr_i2c(i2c_master, buf, tx_buf, ws_pkt.len);
@@ -343,7 +359,6 @@ httpd_uri_t msg_post = {
   .is_websocket = true
 };
 
-
 httpd_handle_t start_webserver() {
   /* Generate default configuration */
   httpd_config_t config = HTTPD_DEFAULT_CONFIG();
@@ -363,6 +378,24 @@ httpd_handle_t start_webserver() {
   return server;
 }
 
+void config_map_init(app_context_t *cntxt) {
+  const esp_partition_t *config_partition = esp_partition_find_first(
+    ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_ANY, "config"
+  );
+
+  assert(config_partition != NULL);
+
+  esp_partition_mmap_handle_t config_map_handle;
+  ESP_ERROR_CHECK(esp_partition_mmap(
+    config_partition, // partition -- Pointer to partition structure obtained using esp_partition_find_first or esp_partition_get. Must be non-NULL
+    0, // offset -- Offset from the beginning of partition where mapping should start.
+    config_partition->size, // size -- Size of the area to be mapped.
+    ESP_PARTITION_MMAP_DATA, // memory -- Memory space where the region should be mapped
+    &cntxt->config_ptr, // const void **out_ptr -- Output, pointer to the mapped memory region
+    &config_map_handle // out_handle -- Output, handle which should be used for esp_partition_munmap call
+  ));
+}
+
 void app_main(void) {
   {
     //Initialize NVS
@@ -375,6 +408,13 @@ void app_main(void) {
   }
 
   ESP_LOGI(TAG, "HELLO 20:59");
+
+  cntxt0 = (app_context_t) { .pixels = {
+    0, 0, 5,    // r g b
+    100,0, 0,    // G R B
+  }};
+  
+  config_map_init(&cntxt0);
 
   // I2C init
   ESP_ERROR_CHECK(i2c_new_master_bus(&i2c_mst_config, &bus_handle));
@@ -413,19 +453,15 @@ void app_main(void) {
   //   .loop_count = 0, // no transfer loop
   // };
 
-  pixels = (pixels_t) { .data = {
-    0, 0, 5,    // r g b
-    100,0, 0,    // G R B
-  }};
 
-  ESP_ERROR_CHECK(rmt_transmit(led_chan, led_encoder0, pixels.data, sizeof(pixels.data), &tx_config));
+
+  ESP_ERROR_CHECK(rmt_transmit(led_chan, led_encoder0, cntxt0.pixels, sizeof(cntxt0.pixels), &tx_config));
   ESP_ERROR_CHECK(rmt_tx_wait_all_done(led_chan, portMAX_DELAY));
-
 
   // SPI LCD
   // lcd_init(spi);
 
-  wifi_init_sta();
+  wifi_init_sta(&cntxt0);
   start_webserver();
   while(1) {
     vTaskDelay(10 / portTICK_PERIOD_MS); // 10ms polling

@@ -27,6 +27,7 @@ export const bins = [`;
 {
   name: "${baseName}",
   address: 0x${file.addr.toString(16)},
+  time: "${(new Date().toISOString())}",
   data: "${data}"
 },`;
   }

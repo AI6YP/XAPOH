@@ -49,8 +49,9 @@ body {
   background-color: #019603;
 }
 
+/*
 .btn_item:hover {
-  background-color: #0be;
+  background-color: #00556d6a;
 }
 
 .btn_item.del:hover {
@@ -60,6 +61,7 @@ body {
 .btn_item.add:hover {
   background-color: #1fe301;
 }
+*/
 
 .btn_item:active {
   background-image: linear-gradient(to top left, rgb(0 0 0 / 20%), rgb(0 0 0 / 20%) 30%, rgb(0 0 0 / 0%));

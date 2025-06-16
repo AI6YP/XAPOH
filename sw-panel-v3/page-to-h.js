@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 'use strict';
 
-const { readFile, writeFile } = require('fs/promises');
+const fs = require('fs');
 const path = require('path');
 const browserify = require('browserify');
 
@@ -12,6 +12,7 @@ const indexHtmlTemplate = (script, css) => `\
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 fill=%22grey%22 font-size=%2290%22>📡</text></svg>">
 <title>XAPOH</title>
+<script>document.XAPOH_VERSION = '${(new Date()).toISOString()}';</script>
 <script>${script}</script>
 <style>${css}</style>
 </head>
@@ -51,12 +52,12 @@ const main = async () => {
     });
   });
 
-  const cssString = await readFile(
+  const cssString = await fs.promises.readFile(
     path.resolve(__dirname, 'lib', 'main.css'),
     {encoding: 'utf8'}
   );
   const htmlText = indexHtmlTemplate(scriptString, cssString);
-  await writeFile(path.resolve(__dirname, 'lib', 'index.html'), htmlText);
+  await fs.promises.writeFile(path.resolve(__dirname, 'lib', 'index.html'), htmlText);
   const items = [{
     name: 'index',
     ext: '.html',
@@ -65,7 +66,7 @@ const main = async () => {
   // console.log(items);
   const res = headerTamplate(items);
   // // console.log(res);
-  await writeFile(path.resolve(__dirname, 'main', 'pages.h'), res);
+  await fs.promises.writeFile(path.resolve(__dirname, 'main', 'pages.h'), res);
 };
 
 main();

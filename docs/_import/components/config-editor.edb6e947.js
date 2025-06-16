@@ -1,8 +1,8 @@
-import {javascript} from 'npm:@codemirror/lang-javascript';
-import {EditorView, keymap} from 'npm:@codemirror/view';
-import {button} from 'npm:@observablehq/inputs';
-import {basicSetup} from 'npm:codemirror';
-import {oneDark} from 'npm:@codemirror/theme-one-dark';
+import {javascript} from "../../_npm/@codemirror/lang-javascript@6.2.4/b4353650.js";
+import {EditorView, keymap} from "../../_npm/@codemirror/view@6.37.2/9c172c27.js";
+import {button} from "../../_observablehq/stdlib/inputs.6dd24f34.js";
+import {basicSetup} from "../../_npm/codemirror@6.0.1/704c83ba.js";
+import {oneDark} from "../../_npm/@codemirror/theme-one-dark@6.1.2/c93f721a.js";
 
 export function configEditor (obj) {
 
