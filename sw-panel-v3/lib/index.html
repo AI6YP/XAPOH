@@ -4,7 +4,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 fill=%22grey%22 font-size=%2290%22>📡</text></svg>">
 <title>XAPOH</title>
-<script>document.XAPOH_VERSION = '2025-06-16T19:45:06.405Z';</script>
+<script>document.XAPOH_VERSION = '2025-06-16T20:58:28.643Z';</script>
 <script>(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 (function (global){(function (){
 'use strict';
@@ -29,13 +29,13 @@ const sendGpio = (socket, configs) => {
         g2 += 16;
         leds[0] = 100; // red 0
         if (bandIdx) {
-          leds[bandIdx * 3 + 2] = 100; // blue
+          leds[bandIdx * 3 + 2] = 100; // blue 
         }
       } else if (cfg.name === 'PreAmp') {
         g3 += 8;
         leds[2] = 100; // blue 0
         if (bandIdx) {
-          leds[bandIdx * 3] = 100; // red
+          leds[bandIdx * 3 + 1] = 100; // red (green)
         }
       }
     }
@@ -287,8 +287,8 @@ module.exports = stringify;
 }
 
 .btn_item {
-  transition-duration: 0.4s;
-  background-color: #088;
+  transition-duration: 0.2s;
+  background-color: #000;
   color: #fff;
   border: 0;
   padding: 16px;
@@ -324,7 +324,8 @@ module.exports = stringify;
 }
 */
 
-.btn_item:active {
+.btn_item.active {
+  background-color: #088;
   background-image: linear-gradient(to top left, rgb(0 0 0 / 20%), rgb(0 0 0 / 20%) 30%, rgb(0 0 0 / 0%));
   box-shadow: inset -2px -2px 3px rgb(255 255 255 / 60%), inset 2px 2px 3px rgb(0 0 0 / 60%);
 }

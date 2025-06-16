@@ -20,13 +20,13 @@ const sendGpio = (socket, configs) => {
         g2 += 16;
         leds[0] = 100; // red 0
         if (bandIdx) {
-          leds[bandIdx * 3 + 2] = 100; // blue
+          leds[bandIdx * 3 + 2] = 100; // blue 
         }
       } else if (cfg.name === 'PreAmp') {
         g3 += 8;
         leds[2] = 100; // blue 0
         if (bandIdx) {
-          leds[bandIdx * 3] = 100; // red
+          leds[bandIdx * 3 + 1] = 100; // red (green)
         }
       }
     }
