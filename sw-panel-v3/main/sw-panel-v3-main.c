@@ -203,24 +203,7 @@ void wifi_init_sta(app_context_t *cntxt) {
     IP_EVENT, IP_EVENT_STA_GOT_IP, &event_handler, NULL, &instance_got_ip
   ));
 
-  wifi_config_t wifi_config = {
-    // 0
-    .sta = {
-      // .ssid = "eu2aa",
-      // .password = "mc067181",
-       /* Authmode threshold resets to WPA2 as default if password matches WPA2 standards (pasword len => 8).
-        * If you want to connect the device to deprecated WEP/WPA networks, Please set the threshold value
-        * to WIFI_AUTH_WEP/WIFI_AUTH_WPA_PSK and set the password with length and format matching to
-        * WIFI_AUTH_WEP/WIFI_AUTH_WPA_PSK standards.
-        */
-      // .threshold.authmode = WIFI_AUTH_WPA2_PSK, // ESP_WIFI_SCAN_AUTH_MODE_THRESHOLD,
-      // .sae_pwe_h2e = WPA3_SAE_PWE_BOTH,
-    },
-  };
-
-  ESP_LOGI(TAG, "B1 [%s] : [%s]", wifi_config.sta.ssid, wifi_config.sta.password);
-
-  // ESP_LOGI(TAG, "B2 [%s] : [%s]", cntxt->ssid, cntxt->password);
+  wifi_config_t wifi_config = {0};
 
   memcpy(
     &wifi_config.sta.ssid,
@@ -232,8 +215,6 @@ void wifi_init_sta(app_context_t *cntxt) {
     ((char *)cntxt->config_ptr) + 32,
     sizeof(wifi_config.sta.password)
   );
-
-  ESP_LOGI(TAG, "B2 [%s] : [%s]", wifi_config.sta.ssid, wifi_config.sta.password);
 
   ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA) );
   ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_config) );
@@ -407,7 +388,7 @@ void app_main(void) {
     ESP_ERROR_CHECK(ret);
   }
 
-  ESP_LOGI(TAG, "HELLO 20:59");
+  ESP_LOGI(TAG, "HELLO XAPOH");
 
   cntxt0 = (app_context_t) { .pixels = {
     0, 0, 5,    // r g b
