@@ -23,6 +23,16 @@ const main = (r, $) => {
     [ 56.00, -105.50], [ 99.05, -104.55], [145.55, -105.55],
   ].map((pos) => [pos[0] - xapoh0[0], pos[1] - xapoh0[1]]);
 
+  // T / B panel mount holes
+  const TBmountHoles = [
+    [3, -15,      0], [WD-3, -15,      0],
+    [3, -15,   H-20], [WD-3, -15,   H-20],
+    [3, -D/2,     0], [WD-3, -D/2,     0],
+    [3, -D/2,  H-20], [WD-3, -D/2,  H-20],
+    [3, -D+15,    0], [WD-3, -D+15,    0],
+    [3, -D+15, H-20], [WD-3, -D+15, H-20],
+  ];
+
   const radiatorBolts = [
     [112.37,  -48.09], [112.62,  -66.59], [112.62,  -57.09]
   ].map((pos) => [pos[0] - xapoh0[0], pos[1] - xapoh0[1]]);
@@ -45,6 +55,21 @@ const main = (r, $) => {
   // South Panel
   let SP = makeBox([0, 0, 0], [WD, 1.6, H+2*P16]);
   SP = SP.translate(0, -D-P16, -P16);
+
+  // Top Panel
+  let TP = makeBox([0, 0, 0], [WD, -D-2*P16, 6]);
+  TP = TP.chamfer(1, (e) => e.containsPoint([5, 0, 6]));
+  TP = TP.chamfer(1, (e) => e.containsPoint([0, -5, 6]));
+  TP = TP.chamfer(1, (e) => e.containsPoint([WD-5, -D-2*P16, 6]));
+  TP = TP.chamfer(1, (e) => e.containsPoint([WD, -D-2*P16+5, 6]));
+  TP = TBmountHoles.reduce((res, pos) => res
+    .cut(makeCylinder(1.7, 20, [pos[0], pos[1]-P16, pos[2]]))
+    .cut(makeCylinder(10,  20, [pos[0], pos[1]-P16, pos[2] + 3]).chamfer(9))
+  , TP);
+
+  TP = TP.translate(0, P16, H);
+  TP = TP.cut(makeBox([0, 0, 0], [WD, 1.6, H+2*P16+1]).translate(0, 0, -P16-0.5));
+  TP = TP.cut(makeBox([0, 0, 0], [WD, 1.6, H+2*P16+1]).translate(0, -D-P16, -P16-0.5));
 
   // West side
   let W = makeBox([0, 0, 0], [6, -D, H]);
@@ -92,22 +117,16 @@ const main = (r, $) => {
   ]
     .reduce((res, pos) => res.cut(makeCylinder(1.3, 20, pos, [0, 180, 0])), frame);
 
-  // T / B panel mount holes
-  frame = [
-    [3, -15,      0], [WD-3, -15,      0],
-    [3, -15,   H-20], [WD-3, -15,   H-20],
-    [3, -D/2,     0], [WD-3, -D/2,     0],
-    [3, -D/2,  H-20], [WD-3, -D/2,  H-20],
-    [3, -D+15,    0], [WD-3, -D+15,    0],
-    [3, -D+15, H-20], [WD-3, -D+15, H-20],
-  ]
-    .reduce((res, pos) => res.cut(makeCylinder(1.3, 20, pos)), frame);
+
+  frame = TBmountHoles.reduce((res, pos) => res.cut(makeCylinder(1.3, 20, pos)), frame);
+
 
   return [
     {name: 'xapoh-case-frame-v1.0.0',  shape: frame,  color: '#aaa', opacity: 0.3},
-    // {name: 'xapoh-case-xapoh-v1.0.0', shape: xapoh, color: '#eea', opacity: 0.5},
-    // {name: 'xapoh-case-ekran-v1.0.0', shape: ekran, color: '#aee', opacity: 0.3},
-    // {name: 'xapoh-case-SP-v1.0.0',  shape: SP,  color: '#aaa', opacity: 0.5},
-    // {name: 'xapoh-case-NP-v1.0.0',  shape: NP,  color: '#aaa', opacity: 0.5}
+    {name: 'xapoh-case-xapoh-v1.0.0', shape: xapoh, color: '#eea', opacity: 0.5},
+    {name: 'xapoh-case-ekran-v1.0.0', shape: ekran, color: '#aee', opacity: 0.3},
+    {name: 'xapoh-case-SP-v1.0.0',  shape: SP,  color: '#aaa', opacity: 0.5},
+    {name: 'xapoh-case-NP-v1.0.0',  shape: NP,  color: '#aaa', opacity: 0.5},
+    {name: 'xapoh-case-TP-v1.0.0',  shape: TP,  color: '#aaa', opacity: 0.5}
   ];
 };
