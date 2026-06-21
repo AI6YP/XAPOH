@@ -27,7 +27,7 @@
 #ifndef __I2C_SLAVE_H
 #define __I2C_SLAVE_H
 
-#include "ch32v003fun.h"
+#include "ch32fun.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <stdbool.h>
@@ -40,9 +40,9 @@ struct _i2c_slave_state {
     uint8_t offset;
     uint8_t position;
     volatile uint8_t* volatile registers1;
-    uint8_t size1;
+    volatile uint8_t size1;
     volatile uint8_t* volatile registers2;
-    uint8_t size2;
+    volatile uint8_t size2;
     i2c_write_callback_t write_callback1;
     i2c_read_callback_t read_callback1;
     bool read_only1;
