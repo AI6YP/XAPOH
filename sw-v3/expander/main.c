@@ -69,9 +69,6 @@ int main () {
     false
   );
 
-  // blink();
-  // copypin();
-
   while (1) {
     __WFE();
     // Delay_Ms(250);
