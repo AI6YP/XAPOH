@@ -4,22 +4,6 @@
 
 volatile uint8_t i2c_registers[32] = {0x00};
 
-void blink () {
-  while (1) {
-    funDigitalWrite(PD4, FUN_HIGH);
-    Delay_Ms(250);
-    funDigitalWrite(PD4, FUN_LOW);
-    Delay_Ms(250);
-  }
-}
-
-void copypin () {
-  while (1) {
-    funDigitalWrite(PD4, ((GPIOD->INDR >> (0)) & 1));
-    Delay_Ms(250);
-  }
-}
-
 void onWrite(uint8_t reg, uint8_t length) {
   uint8_t reg0 = i2c_registers[0];
   funDigitalWrite(PD4, (reg0 >> 0) & 1);
