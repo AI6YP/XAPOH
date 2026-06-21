@@ -41,7 +41,7 @@ int main () {
   funPinMode(PA1, GPIO_Speed_50MHz | GPIO_CNF_OUT_PP); // 5
   funPinMode(PA2, GPIO_Speed_50MHz | GPIO_CNF_OUT_PP); // 6
   // 7 GND
-  funPinMode(PD0, GPIO_Speed_In | GPIO_CNF_IN_PUPD); // 8
+  // funPinMode(PD0, GPIO_Speed_In | GPIO_CNF_IN_PUPD); // 8
  	// GPIO_pinMode(GPIOv_from_PORT_PIN(GPIO_port_D, 0), GPIO_pinMode_I_pullUp, GPIO_Speed_In);
   // pGPIO->CFGLR |= (GPIO_CNF_IN_PUPD << (4*u8Pin));
   // GPIO_Speed_In	| GPIO_CNF_IN_PUPD
@@ -60,8 +60,35 @@ int main () {
   funPinMode(PD2, GPIO_Speed_50MHz | GPIO_CNF_OUT_PP); // 19
   funPinMode(PD3, GPIO_Speed_50MHz | GPIO_CNF_OUT_PP); // 20
 
+  // 7-bit address (0x08 ... 0x77)
+  uint8_t i2c_addr;
+  // PD0 = input with internal pull-up/down. In PUPD mode the CFGLR only
+  // selects "input with pull"; the *direction* is the OUTDR bit:
+  //   funDigitalWrite(PD0,1) -> pull-up, funDigitalWrite(PD0,0) -> pull-down.
+  funPinMode(PD0, GPIO_Speed_In | GPIO_CNF_IN_PUPD); // 8
+
+  funDigitalWrite(PD0, 0);   // enable internal pull-down 35...55K resistor
+  Delay_Us(10);              // let pull settle pin capacitance
+  if (GPIOD->INDR & 1) {     // still high despite pull-down -> strong VDD
+    i2c_addr = 0xc;
+  } else {
+    funDigitalWrite(PD0, 1); // enable internal pull-up 35...55K resistor
+    Delay_Us(10);            // let pull settle pin capacitance
+    if (GPIOD->INDR & 1) {   // pull-up wins -> floating (no external drive)
+      i2c_addr = 0xb;
+    } else {                 // still low despite pull-up -> strong GND
+      i2c_addr = 0xa;
+    }
+  }
+
+#ifdef DEBUG
+  // Debug code to use LEDs via PC3, PC4 to indicate lower part of i2c address
+  funDigitalWrite(PC3, (i2c_addr >> 0) & 1);
+  funDigitalWrite(PC4, (i2c_addr >> 1) & 1);
+#endif
+
   SetupI2CSlave(
-    (0xa | (GPIOD->INDR & 1)), // PD0 = A0  7-bit address (0x08 ... 0x77)
+    i2c_addr,
     i2c_registers,
     sizeof(i2c_registers),
     onWrite,
