@@ -74,8 +74,8 @@ static EventGroupHandle_t s_wifi_event_group;
 
 struct app_context_s {
   uint8_t pixels[NUM_LEDS * 3];
-  char * ssid;
-  char * password;
+  // char * ssid;
+  // char * password;
   const void *config_ptr;
   // rmt_channel_handle_t led_chan; // = NULL;
   // rmt_encoder_handle_t led_encoder;
