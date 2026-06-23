@@ -3,12 +3,12 @@
 const stringify = require('onml/stringify.js');
 
 const sendGpio = (socket, configs) => {
-  let [g0, g1, g2, g3] = [0, 0, 0, 0]; // config.gpios;
-  let leds = Array.from({length: 9 * 3}, () => 0);
+  let [g0, g1, g2, g3, g4, g5] = [0, 0, 0, 0, 0, 0]; // config.gpios;
+  let leds = Array.from({length: 10 * 3}, () => 0);
   let bandIdx;
   configs.map((cfg, idx) => {
     if (cfg.val && cfg.gpios) {
-      [g0, g1, g2, g3] = cfg.gpios;
+      [g0, g1, g2, g3, g4, g5] = cfg.gpios;
       bandIdx = idx - 1; // 1..8
       // leds[bandIdx * 3 + 2] = 100; // blue
       leds[1] = 100; // green 0
@@ -20,7 +20,7 @@ const sendGpio = (socket, configs) => {
         g2 += 16;
         leds[0] = 100; // red 0
         if (bandIdx) {
-          leds[bandIdx * 3 + 2] = 100; // blue 
+          leds[bandIdx * 3 + 2] = 100; // blue
         }
       } else if (cfg.name === 'PreAmp') {
         g3 += 8;
@@ -31,10 +31,11 @@ const sendGpio = (socket, configs) => {
       }
     }
   });
-  console.log(g0, g1, g2, g3);
+  console.log(g0, g1, g2, g3, g4, g5);
   if (socket) {
-    socket.send(Uint8Array.from([0, 0, g0, g1]));
-    socket.send(Uint8Array.from([1, 0, g2, g3]));
+    socket.send(Uint8Array.from([0, 0, g0, g1])); // D52
+    socket.send(Uint8Array.from([1, 0, g2, g3])); // D51
+    socket.send(Uint8Array.from([2, 0, g4, g5])); // D50
     socket.send(Uint8Array.from([255, ...leds]));
   }
 };
@@ -77,12 +78,13 @@ global.XAPOH = async (divName) => {
   //   ml.push(['button', {id: btno.id}, btno.label]);
   // });
 
+  /*
   const state = {
     configs: [
       //                                   //              (D17)             Y                       (D23)
-      //                                   // Y   Y                        Y 1 Y                  Y          Y Y Y A       
+      //                                   // Y   Y                        Y 1 Y                  Y          Y Y Y A
       {name: 'ON',     g: 'on'     },      // 3   1     M M            J B 5 N 4        Y Y Y Y O 6 Q        5 7 2 M Y Y Y
-      {name: 'PreAmp', g: 'preamp' },      // N . N B . A B        Q J N N N N N        5 6 4 3 N N N        + N N P 7 1 2 
+      {name: 'PreAmp', g: 'preamp' },      // N . N B . A B        Q J N N N N N        5 6 4 3 N N N        + N N P 7 1 2
       {name: '144',    g: 'band', gpios: [bf([ , ,1, , , , ]), bf([ ,1, ,1,1,1,1]), bf([ , , ,1, ,1,1]), bf([ ,1,1, , , , ])]},
       {name: '432',    g: 'band', gpios: [bf([1, , , , , ,1]), bf([ ,1, ,1,1, ,1]), bf([ , , , , ,1,1]), bf([ ,1,1, , ,1, ])]},
       {name: '1296',   g: 'band', gpios: [bf([1, ,1, , ,1, ]), bf([ ,1, ,1,1,1,1]), bf([ , ,1, , ,1,1]), bf([ , , , ,1, ,1])]},
@@ -91,6 +93,26 @@ global.XAPOH = async (divName) => {
       {name: 'SAT B',  g: 'band', gpios: [bf([1, , ,1, , , ]), bf([ ,1, , , , ,1]), bf([1,1, , , , ,1]), bf([1,1,1, , ,1, ])]},
       {name: 'SAT J',  g: 'band', gpios: [bf([ , ,1, , , , ]), bf([ , ,1,1, ,1,1]), bf([1,1, ,1, , ,1]), bf([1,1,1, , , , ])]},
       {name: 'SAT Q',  g: 'band', gpios: [bf([1, ,1, , , , ]), bf([1,1, ,1,1,1, ]), bf([ ,1,1, , , , ]), bf([ , ,1, ,1, , ])]},
+    ]
+  };
+  */
+
+  const state = {
+    configs: [ /* eslint no-sparse-arrays :0, array-bracket-spacing: 0, comma-spacing: 0, comma-dangle: 0 */
+      //                                   //              (D52)                                     (D51)                                     (D50)                          .
+      //                                   //                                                       R                                                                         .
+      //                                   //       T     T        P     T   T            T     T   E                T                  Y   Y          H   Y                  .
+      {name: 'ON',     g: 'on'     },      // N N T 4 N Q 7        R O T 1 T 5 N        Y 3 T T 2 Y Z            T T 6 Y N          J Y 3 Q 1          1 B 6 Y Y Y H          .
+      {name: 'PreAmp', g: 'preamp' },      // 4 3 5 N 1 + N        E N 1 N 4 N 2        9 N 3 2 N 2 3        J Z 7 6 N 4 5        B N 1 N N N Q        N N N 5 3 6 1          .
+      {name: '144',    g: 'band', gpios: [bf([1,1,1, , , , ]), bf([ , , ,1,1, ,1]), bf([ ,1, , ,1, , ]), bf([1, , , ,1, , ]), bf([ , , , ,1,1, ]), bf([1,1,1, ,1, , ])]},
+      {name: '432',    g: 'band', gpios: [bf([1,1,1,1,1, , ]), bf([ , ,1, , , , ]), bf([ ,1, , ,1, , ]), bf([1, , , ,1, , ]), bf([ , , ,1,1, , ]), bf([1,1,1, , , , ])]},
+      {name: '1296',   g: 'band', gpios: [bf([1, , , ,1, , ]), bf([ , , , , ,1,1]), bf([ ,1, ,1, ,1, ]), bf([1, , , ,1,1, ]), bf([ , ,1,1,1,1, ]), bf([1,1,1, , , , ])]},
+      {name: '2400',   g: 'band', gpios: [bf([ ,1, , ,1, , ]), bf([ , , , , , ,1]), bf([1, ,1, ,1, , ]), bf([1, ,1,1, ,1, ]), bf([ , , ,1,1,1, ]), bf([1,1,1, , , , ])]},
+      {name: 'SAT A',  g: 'band', gpios: [bf([1,1,1, , , , ]), bf([ , , ,1,1, ,1]), bf([ ,1, , ,1, , ]), bf([1, , , ,1, , ]), bf([ , , , ,1,1, ]), bf([1,1, ,1,1,1, ])]},
+      {name: 'SAT B',  g: 'band', gpios: [bf([1,1,1,1,1, , ]), bf([ , ,1, , , , ]), bf([ ,1, , ,1, , ]), bf([1, , , ,1, , ]), bf([1, ,1,1,1, , ]), bf([1, , ,1, ,1, ])]},
+      {name: 'SAT J',  g: 'band', gpios: [bf([1,1,1, , , , ]), bf([ , , ,1,1, ,1]), bf([ ,1, , ,1, , ]), bf([ , , , ,1, , ]), bf([ ,1, , ,1,1, ]), bf([1,1, ,1,1,1, ])]},
+      {name: 'SAT Q',  g: 'band', gpios: [bf([ ,1, , ,1,1,1]), bf([ , , , , , ,1]), bf([ , ,1, , , , ]), bf([1, , ,1, ,1, ]), bf([ , , ,1, ,1,1]), bf([1,1, , , ,1, ])]},
+      {name: 'HF',     g: 'band', gpios: [bf([ , , , , , , ]), bf([ , , , , , , ]), bf([ , , , , , , ]), bf([ , , , , , ,1]), bf([ , , , , , , ]), bf([ , , , , , ,1])]},
     ]
   };
 

@@ -9,6 +9,7 @@
     "deploy": "observable deploy",
     "observable": "observable"
   },
+  "type": "commonjs",
   "engines": {
     "node": ">=22"
   },

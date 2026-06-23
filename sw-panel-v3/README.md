@@ -1,7 +1,4 @@
-esp-idf v5.0
-
-Modify `main/secrets.h` for WiFi Auth
-
+esp-idf v6.0
 
 ```bash
 cd ~/work/github/espressif/esp-idf

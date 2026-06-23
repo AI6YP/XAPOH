@@ -124,6 +124,14 @@ i2c_device_config_t dev_cfg_2 = {
 
 i2c_master_dev_handle_t dev_handle_2;
 
+i2c_device_config_t dev_cfg_3 = {
+  .dev_addr_length = I2C_ADDR_BIT_LEN_7,
+  .device_address = 0x0C,
+  .scl_speed_hz = 100000, // 100000
+};
+
+i2c_master_dev_handle_t dev_handle_3;
+
 static void event_handler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data) {
   if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START) {
      esp_wifi_connect();
@@ -155,7 +163,7 @@ void rdwr_i2c(i2c_master_bus_config_t i2c_master, uint8_t *tx_data, uint8_t *rx_
   }
 
   if (i2c_master_transmit(
-    tx_data[0] ? dev_handle_2 : dev_handle_1,
+    (tx_data[0] ? dev_handle_2 : (tx_data[1] ? dev_handle_1 : dev_handle_3)),
     tx_data + 1,
     length - 1, -1
   ) != ESP_OK) {
@@ -394,13 +402,14 @@ void app_main(void) {
     0, 0, 5,    // r g b
     100,0, 0,    // G R B
   }};
-  
+
   config_map_init(&cntxt0);
 
   // I2C init
   ESP_ERROR_CHECK(i2c_new_master_bus(&i2c_mst_config, &bus_handle));
   ESP_ERROR_CHECK(i2c_master_bus_add_device(bus_handle, &dev_cfg_1, &dev_handle_1));
   ESP_ERROR_CHECK(i2c_master_bus_add_device(bus_handle, &dev_cfg_2, &dev_handle_2));
+  ESP_ERROR_CHECK(i2c_master_bus_add_device(bus_handle, &dev_cfg_3, &dev_handle_3));
 
   uint8_t default0 [] = {0, 0, 6, 125};
   uint8_t default1 [] = {1, 0, 8, 4};
