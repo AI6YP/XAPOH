@@ -72,7 +72,7 @@ const main = async () => {
   const xtermCss = await readFile('node_modules/@xterm/xterm/css/xterm.css', 'utf8');
   const bundledJs = await build();
   const html = htmlTemplate(bundledJs, expanderImage, bridgeBins, xtermCss);
-  await writeFile('index.html', html);
+  await writeFile('../docs/index.html', html);
 };
 
 main();
