@@ -4,7 +4,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 fill=%22grey%22 font-size=%2290%22>📡</text></svg>">
 <title>XAPOH</title>
-<script>document.XAPOH_VERSION = '2026-06-23T00:32:32.914Z';</script>
+<script>document.XAPOH_VERSION = 'v9 2026-06-28 10:50';</script>
 <script>(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 (function (global){(function (){
 'use strict';
@@ -113,6 +113,7 @@ global.XAPOH = async (divName) => {
       //                                   //       T     T        P     T   T            T     T   E                T                  Y   Y          H   Y                  .
       {name: 'ON',     g: 'on'     },      // N N T 4 N Q 7        R O T 1 T 5 N        Y 3 T T 2 Y Z            T T 6 Y N          J Y 3 Q 1          1 B 6 Y Y Y H          .
       {name: 'PreAmp', g: 'preamp' },      // 4 3 5 N 1 + N        E N 1 N 4 N 2        9 N 3 2 N 2 3        J Z 7 6 N 4 5        B N 1 N N N Q        N N N 5 3 6 1          .
+      {name: 'HF',     g: 'band', gpios: [bf([ , , , , , , ]), bf([ , , , , , , ]), bf([ , , , , , , ]), bf([ , , , , , ,1]), bf([ , , , , , , ]), bf([ , , , , , ,1])]},
       {name: '144',    g: 'band', gpios: [bf([1,1,1, , , , ]), bf([ , , ,1,1, ,1]), bf([ ,1, , ,1, , ]), bf([1, , , ,1, , ]), bf([ , , , ,1,1, ]), bf([1,1,1, ,1, , ])]},
       {name: '432',    g: 'band', gpios: [bf([1,1,1,1,1, , ]), bf([ , ,1, , , , ]), bf([ ,1, , ,1, , ]), bf([1, , , ,1, , ]), bf([ , , ,1,1, , ]), bf([1,1,1, , , , ])]},
       {name: '1296',   g: 'band', gpios: [bf([1, , , ,1, , ]), bf([ , , , , ,1,1]), bf([ ,1, ,1, ,1, ]), bf([1, , , ,1,1, ]), bf([ , ,1,1,1,1, ]), bf([1,1,1, , , , ])]},
@@ -121,7 +122,6 @@ global.XAPOH = async (divName) => {
       {name: 'SAT B',  g: 'band', gpios: [bf([1,1,1,1,1, , ]), bf([ , ,1, , , , ]), bf([ ,1, , ,1, , ]), bf([1, , , ,1, , ]), bf([1, ,1,1,1, , ]), bf([1, , ,1, ,1, ])]},
       {name: 'SAT J',  g: 'band', gpios: [bf([1,1,1, , , , ]), bf([ , , ,1,1, ,1]), bf([ ,1, , ,1, , ]), bf([ , , , ,1, , ]), bf([ ,1, , ,1,1, ]), bf([1,1, ,1,1,1, ])]},
       {name: 'SAT Q',  g: 'band', gpios: [bf([ ,1, , ,1,1,1]), bf([ , , , , , ,1]), bf([ , ,1, , , , ]), bf([1, , ,1, ,1, ]), bf([ , , ,1, ,1,1]), bf([1,1, , , ,1, ])]},
-      {name: 'HF',     g: 'band', gpios: [bf([ , , , , , , ]), bf([ , , , , , , ]), bf([ , , , , , , ]), bf([ , , , , , ,1]), bf([ , , , , , , ]), bf([ , , , , , ,1])]},
     ]
   };
 

@@ -4,6 +4,7 @@
 const fs = require('fs');
 const path = require('path');
 const browserify = require('browserify');
+const manifest = require('../manifest.json');
 
 const indexHtmlTemplate = (script, css) => `\
 <html>
@@ -12,7 +13,7 @@ const indexHtmlTemplate = (script, css) => `\
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 fill=%22grey%22 font-size=%2290%22>📡</text></svg>">
 <title>XAPOH</title>
-<script>document.XAPOH_VERSION = '${(new Date()).toISOString()}';</script>
+<script>document.XAPOH_VERSION = '${manifest.version}';</script>
 <script>${script}</script>
 <style>${css}</style>
 </head>

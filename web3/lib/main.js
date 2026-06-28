@@ -6,9 +6,8 @@ import { partTable, t2pt, cfg2ui8 } from './esp-partition.js';
 import { mountBridgeConfigEditor } from './mount-bridge-config-editor.js';
 import { initCSS } from './init-css.js';
 
-// const pkg = require('../package.json');
-// import pkg from '../package.json' assert { type: 'json' };
-const pkgVersion = 'v9 2026-06-22 17:30';
+import manifest from '../../manifest.json';
+const pkgVersion = manifest.version;
 
 // esptool-js 0.6 wants each fileArray entry's `data` as a Uint8Array.
 const b64ToUi8 = (b64) => Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
