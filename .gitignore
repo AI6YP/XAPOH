@@ -1,3 +1,18 @@
 bak
 node_modules
 package-lock.json
+gerbers
+
+# build artifacts (repo tracks source only)
+*.elf
+*.bin
+*.hex
+*.lst
+*.map
+
+# large generated bundles (built from lib/ sources)
+web4/index.html
+web3/index.html
+
+# hardware archives
+*.zip
