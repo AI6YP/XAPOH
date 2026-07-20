@@ -1,0 +1,106 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 fill=%22grey%22 font-size=%2290%22>📡</text></svg>">
+<title>XAPOH</title>
+<script>document.XAPOH_VERSION = 'v9 2026-06-28 11:00';</script>
+<script>"use strict";(()=>{var b=(r,n)=>()=>{try{return n||r((n={exports:{}}).exports,n),n.exports}catch(s){throw n=0,s}};var y=b((T,v)=>{"use strict";var A=r=>r&&Object.prototype.toString.call(r)==="[object Object]";function w(r){if(!(r>0))return s=>s;var n=" ".repeat(r);return s=>{if(typeof s!="string")return s;let c=s.split(`
+`);return c.length===1?n+s:c.map(m=>m.trim()===""?m:n+m).join(`
+`)}}var O=r=>r.split(`
+`).filter(n=>n.trim()!=="").join(`
+`);function S(r,n){let s=n>0?`
+`:"",c=w(n);function m(d){let i="",t=!0,a;return d.some((o,g,f)=>{if(g===0)return a="<"+o,f.length===1;if(g===1){if(A(o)){if(Object.keys(o).map(u=>{let p=o[u];Array.isArray(p)&&(p=p.join(" ")),a+=" "+u+'="'+p+'"'}),f.length===2)return!0;a+=">";return}a+=">"}switch(typeof o){case"string":case"number":case"boolean":case"undefined":i+=o+s;return}t=!1,i+=m(o)})?a+"/>"+s:t?a+O(i)+"</"+d[0]+">"+s:a+s+c(i)+"</"+d[0]+">"+s}return m(r)}v.exports=S});var j=b(()=>{var h=y(),E=(r,n)=>{let[s,c,m,d,i,t]=[0,0,0,0,0,0],a=Array.from({length:30},()=>0),l;n.map((o,g)=>{o.val&&o.gpios&&([s,c,m,d,i,t]=o.gpios,l=g-1,a[1]=100)}),n.map(o=>{o.val&&(o.name==="ON"?(m+=16,a[0]=100,l&&(a[l*3+2]=100)):o.name==="PreAmp"&&(d+=8,a[2]=100,l&&(a[l*3+1]=100)))}),console.log(s,c,m,d,i,t),r&&(r.send(Uint8Array.from([0,s,c,0])),r.send(Uint8Array.from([1,m,d,0])),r.send(Uint8Array.from([2,i,t,0])),r.send(Uint8Array.from([255,...a])))};function e(r){let n=0;for(let[s,c]of r.entries())c&&(n+=2**s);return n}global.XAPOH=async r=>{let n,s=document.getElementById(r),c=new FontFace("Iosevka Drom","url(https://vc.drom.io/IosevkaDrom-Regular.woff2)");document.fonts.add(c),await c.load();let m=t=>["div",{class:"xapohapp"},["h1","XAPOH"],["div",{class:"configs"},...t.configs.flatMap((a,l)=>[["input",{id:`send_cfg${l}`,class:"btn_item",type:"button",value:a.name}]])],["div",{class:"tiny"},document.XAPOH_VERSION]],d={configs:[{name:"ON",g:"on"},{name:"PreAmp",g:"preamp"},{name:"HF",g:"band",gpios:[e([,,,,,,]),e([,,,,,,]),e([,,,,,,]),e([,,,,,,1]),e([,,,,,,]),e([,,,,,,1])]},{name:"144",g:"band",gpios:[e([1,1,1,,,,]),e([,,,1,1,,1]),e([,1,,,1,,]),e([1,,,,1,,]),e([,,,,1,1]),e([1,1,1,,1,,])]},{name:"432",g:"band",gpios:[e([1,1,1,1,1,,]),e([,,1,,,,]),e([,1,,,1,,]),e([1,,,,1,,]),e([,,,1,1,,]),e([1,1,1,,,,])]},{name:"1296",g:"band",gpios:[e([1,,,,1,,]),e([,,,,,1,1]),e([,1,,1,,1]),e([1,,,,1,1]),e([,,1,1,1,1]),e([1,1,1,,,,])]},{name:"2400",g:"band",gpios:[e([,1,,,1,,]),e([,,,,,,1]),e([1,,1,,1,,]),e([1,,1,1,,1]),e([,,,1,1,1]),e([1,1,1,,,,])]},{name:"SAT A",g:"band",gpios:[e([1,1,1,,,,]),e([,,,1,1,,1]),e([,1,,,1,,]),e([1,,,,1,,]),e([,,,,1,1]),e([1,1,,1,1,1])]},{name:"SAT B",g:"band",gpios:[e([1,1,1,1,1,,]),e([,,1,,,,]),e([,1,,,1,,]),e([1,,,,1,,]),e([1,,1,1,1,,]),e([1,,,1,,1])]},{name:"SAT J",g:"band",gpios:[e([1,1,1,,,,]),e([,,,1,1,,1]),e([,1,,,1,,]),e([,,,,1,,]),e([,1,,,1,1]),e([1,1,,1,1,1])]},{name:"SAT Q",g:"band",gpios:[e([,1,,,1,1,1]),e([,,,,,,1]),e([,,1,,,,]),e([1,,,1,,1]),e([,,,1,,1,1]),e([1,1,,,,1])]}]};s.innerHTML=h(m(d));let i;i=new WebSocket("ws://"+location.host+"/dev1"),i.binaryType="arraybuffer",await new Promise(t=>{i.addEventListener("open",()=>t())}),i.addEventListener("message",t=>{let a=new Uint8Array(t.data),l="< ";for(let o of a)l+=o.toString(16).padStart(2,0)+" ";l+=">",console.log("Message from server: "+l+" ("+(performance.now()-n)+")")}),d.configs.map((t,a)=>{let l=`send_cfg${a}`,o=document.getElementById(l);t.target=o,o.addEventListener("click",()=>{d.configs.map(g=>{g.target===t.target?(t.val=!t.val,t.val?t.target.classList.add("active"):t.target.classList.remove("active")):g.g===t.g&&(g.target.classList.remove("active"),g.val=!1)}),console.log(t),E(i,d.configs)})}),global.SOCKET={send:t=>{n=performance.now(),i.send(t)}}}});j();})();
+</script>
+<style>body {
+  font-family: "Iosevka Drom";
+  font-size: 24px;
+  background-color: #222;
+  color: #eee;
+}
+
+.item {
+  background-color: #111;
+  color: #fff;
+  font-family: "Iosevka Drom";
+  font-size: 24px;
+  margin: 4px;
+  padding: 4px;
+}
+
+.num_item {
+  background-color: #333;
+  color: #5f5;
+  font-size: 24px;
+  border: 0;
+  padding: 4px;
+  margin: 4px;
+  line-height: 1;
+  border-radius: 5px;
+}
+
+.btn_item {
+  transition-duration: 0.2s;
+  background-color: #000;
+  color: #fff;
+  border: 0;
+  padding: 16px;
+  margin: 8px;
+  font-size: 32px;
+  /* line-height: 2.5; */
+  /* padding: 0 20px; */
+  text-shadow: 1px 1px 1px #000;
+  border-radius: 8px;
+  background-image: linear-gradient(to top left, rgb(0 0 0 / 20%), rgb(0 0 0 / 20%) 30%, rgb(0 0 0 / 0%));
+  box-shadow: inset 2px 2px 3px rgb(255 255 255 / 60%), inset -2px -2px 3px rgb(0 0 0 / 60%);
+}
+
+.btn_item.del {
+  background-color: #b00;
+}
+
+.btn_item.add {
+  background-color: #019603;
+}
+
+/*
+.btn_item:hover {
+  background-color: #00556d6a;
+}
+
+.btn_item.del:hover {
+  background-color: #f00;
+}
+
+.btn_item.add:hover {
+  background-color: #1fe301;
+}
+*/
+
+.btn_item.active {
+  background-color: #088;
+  background-image: linear-gradient(to top left, rgb(0 0 0 / 20%), rgb(0 0 0 / 20%) 30%, rgb(0 0 0 / 0%));
+  box-shadow: inset -2px -2px 3px rgb(255 255 255 / 60%), inset 2px 2px 3px rgb(0 0 0 / 60%);
+}
+
+h1 {
+  text-align: center;
+  margin: 0px;
+}
+
+.tiny {
+  text-align: center;
+  font-size: 14px;
+}
+
+.configs {
+  display: grid;
+  grid-template-columns: 50% 50%; /* 10%; */
+  /* grid-row-gap: 16px; */
+}
+
+</style>
+</head>
+<body onload="XAPOH('root')">
+<body><div id="root"></div></body>
+</html>

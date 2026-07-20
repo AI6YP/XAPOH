@@ -1,0 +1,22 @@
+{
+  "name": "xapoh-sw-panel-v4",
+  "version": "1.0.0",
+  "description": "XAPOH ESP32-C6 hosted control UI (v4)",
+  "main": "page-to-h.js",
+  "type": "commonjs",
+  "scripts": {
+    "build": "node page-to-h.js",
+    "test": "eslint lib"
+  },
+  "author": "AI6YP",
+  "license": "MIT",
+  "devDependencies": {
+    "@drom/eslint-config": "^0.12.0",
+    "esbuild": "^0.21.0",
+    "eslint": "^8.54.0",
+    "onml": "^2.1.0"
+  },
+  "eslintConfig": {
+    "extends": "@drom/eslint-config/eslint8/node12"
+  }
+}

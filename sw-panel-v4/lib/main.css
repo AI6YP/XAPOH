@@ -1,0 +1,87 @@
+body {
+  font-family: "Iosevka Drom";
+  font-size: 24px;
+  background-color: #222;
+  color: #eee;
+}
+
+.item {
+  background-color: #111;
+  color: #fff;
+  font-family: "Iosevka Drom";
+  font-size: 24px;
+  margin: 4px;
+  padding: 4px;
+}
+
+.num_item {
+  background-color: #333;
+  color: #5f5;
+  font-size: 24px;
+  border: 0;
+  padding: 4px;
+  margin: 4px;
+  line-height: 1;
+  border-radius: 5px;
+}
+
+.btn_item {
+  transition-duration: 0.2s;
+  background-color: #000;
+  color: #fff;
+  border: 0;
+  padding: 16px;
+  margin: 8px;
+  font-size: 32px;
+  /* line-height: 2.5; */
+  /* padding: 0 20px; */
+  text-shadow: 1px 1px 1px #000;
+  border-radius: 8px;
+  background-image: linear-gradient(to top left, rgb(0 0 0 / 20%), rgb(0 0 0 / 20%) 30%, rgb(0 0 0 / 0%));
+  box-shadow: inset 2px 2px 3px rgb(255 255 255 / 60%), inset -2px -2px 3px rgb(0 0 0 / 60%);
+}
+
+.btn_item.del {
+  background-color: #b00;
+}
+
+.btn_item.add {
+  background-color: #019603;
+}
+
+/*
+.btn_item:hover {
+  background-color: #00556d6a;
+}
+
+.btn_item.del:hover {
+  background-color: #f00;
+}
+
+.btn_item.add:hover {
+  background-color: #1fe301;
+}
+*/
+
+.btn_item.active {
+  background-color: #088;
+  background-image: linear-gradient(to top left, rgb(0 0 0 / 20%), rgb(0 0 0 / 20%) 30%, rgb(0 0 0 / 0%));
+  box-shadow: inset -2px -2px 3px rgb(255 255 255 / 60%), inset 2px 2px 3px rgb(0 0 0 / 60%);
+}
+
+h1 {
+  text-align: center;
+  margin: 0px;
+}
+
+.tiny {
+  text-align: center;
+  font-size: 14px;
+}
+
+.configs {
+  display: grid;
+  grid-template-columns: 50% 50%; /* 10%; */
+  /* grid-row-gap: 16px; */
+}
+
