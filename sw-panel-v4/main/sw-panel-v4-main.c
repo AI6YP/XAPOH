@@ -41,6 +41,9 @@
 // gpio0/1/2 — see link.c. Same gpio is SWIO in program mode, UART TX in operation.
 #define FRAME_SYNC 0xAA
 
+// GPIO3: external VCC switch control (0 = 5V normal operation, 1 = 3.3V programming mode)
+#define VCC_SWITCH_GPIO 3
+
 static const char *TAG = "XAPOH";
 
 // Embedded CH32V003 image (sw-v4/main.bin) — compiled in via expander_image.h
@@ -196,9 +199,25 @@ static void flash_one(int idx) {
   size_t len = expander_bin_length;
   int gpio = link_gpio_num(idx);
   ESP_LOGW(TAG, "FLASH expander %d (gpio%d), %u bytes", idx, gpio, (unsigned)len);
+
+  ESP_LOGW(TAG, "Switching to 3.3V programming mode");
+
+  // Switch to 3.3V programming mode
+  gpio_set_level(VCC_SWITCH_GPIO, 1);
+  vTaskDelay(pdMS_TO_TICKS(300));
+
+  ESP_LOGW(TAG, "Flashing expander");
+
   link_flash_begin(idx);        // take the link, hand the raw pin to SWIO
   esp_err_t r = swio_flash_image(gpio, expander_bin, len);
   link_flash_end(idx);          // restore UART-TX idle-high, release the link
+
+  ESP_LOGW(TAG, "Switching back to 5V normal operation");
+
+  // Wait before switching back to 5V normal operation
+  vTaskDelay(pdMS_TO_TICKS(300));
+  gpio_set_level(VCC_SWITCH_GPIO, 0);
+
   ESP_LOGW(TAG, "FLASH expander %d -> %s", idx, esp_err_to_name(r));
 }
 
@@ -267,6 +286,11 @@ void app_main(void) {
 
   cntxt0 = (app_context_t){ .pixels = {0, 0, 5, 100, 0, 0} };
   config_map_init(&cntxt0);
+
+  // Initialize VCC switch GPIO (0 = 5V normal operation)
+  gpio_reset_pin(VCC_SWITCH_GPIO);
+  gpio_set_direction(VCC_SWITCH_GPIO, GPIO_MODE_OUTPUT);
+  gpio_set_level(VCC_SWITCH_GPIO, 0);
 
   link_init(); // HW UART1 + 3 links parked idle-high
 
