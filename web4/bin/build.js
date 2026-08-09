@@ -97,6 +97,8 @@ const main = async () => {
   const app = await bundleWeb4App(root, manifest);
   const html = web4HtmlTemplate(app, bridgeBins, xtermCss);
   await writeFile(path.join(root, 'index.html'), html);
+  // keep copy in docs/ for the GitHub pages deploy
+  await writeFile(path.join(repo, 'docs', 'index.html'), html);
 
 
   console.log(`\nwrote web4/index.html (${html.length} bytes, ` + // eslint-disable-line no-console
