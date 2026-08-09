@@ -4,7 +4,6 @@ import { xterm } from './xterm.js';
 import { partTable, t2pt, cfg2ui8 } from './esp-partition.js';
 import { mountBridgeConfigEditor } from './mount-bridge-config-editor.js';
 import { initCSS } from './init-css.js';
-import { connectEsp, sendCommand } from './esp-serial.js';
 
 // eslint-disable-next-line no-undef
 const manifest = MANIFEST;
@@ -30,36 +29,56 @@ const buildFileArray = async (cfg) => [
 
 // --- Bridge tab: flash the ESP32-C6 firmware (esptool-js over WebSerial) ------
 const genOnClickActivateBridge = () => async () => {
-  const filters = [{usbVendorId: 0x303a, usbProductId: 0x1001}]; // ESP32-C6
-  const port = await navigator.serial.requestPort({filters});
-  const baudrate = [115200, 460800, 921600][1];
-  const transport = new Transport(port, true);
-  const term = xterm();
-  const flashOptions = {transport, baudrate, terminal: term.callbacks};
-  const esploader = new ESPLoader(flashOptions);
-  const chip = await esploader.main();
+  const activateBtn = document.getElementById('buttonBridge');
+  if (activateBtn) {
+    activateBtn.setAttribute('aria-disabled', 'true');
+    activateBtn.textContent = 'Подключение…';
+  }
+  let port, transport, esploader, chip, term;
+  try {
+    const filters = [{usbVendorId: 0x303a, usbProductId: 0x1001}]; // ESP32-C6
+    port = await navigator.serial.requestPort({filters});
+    transport = new Transport(port, true);
+    term = xterm();
+    const baudrate = [115200, 460800, 921600][1];
+    const flashOptions = {transport, baudrate, terminal: term.callbacks};
+    esploader = new ESPLoader(flashOptions);
+    chip = await esploader.main();
+  } catch (e) {
+    if (activateBtn) {
+      activateBtn.removeAttribute('aria-disabled');
+      activateBtn.textContent = 'Активировать XAPOH';
+    }
+    return;
+  }
   console.log(chip); // eslint-disable-line no-console
 
   const tab = document.getElementById('content');
   tab.innerHTML = /*html*/`
-    <div class="success">Мост подключен: ${chip}</div>
+    <div class="success">XAPOH подключен: ${chip}</div>
     <h3>Конфигурация</h3>
     <div class="bridge-config" id="bridgeConfig"></div>
     <div class="flash-row">
-      <span class="button flush" id="buttonBridgeFlash">Прошить ESP32C6</span>
-      <span class="button flash" id="buttonExpanderFlash0">Прошить D50</span>
-      <span class="button flash" id="buttonExpanderFlash1">Прошить D51</span>
-      <span class="button flash" id="buttonExpanderFlash2">Прошить D52</span>
+      <span class="button flush" id="buttonBridgeFlash" role="button" tabindex="0">Прошить ESP32C6</span>
+      <span class="button flash" id="buttonExpanderFlash0" role="button" tabindex="0">Прошить D50</span>
+      <span class="button flash" id="buttonExpanderFlash1" role="button" tabindex="0">Прошить D51</span>
+      <span class="button flash" id="buttonExpanderFlash2" role="button" tabindex="0">Прошить D52</span>
     </div>
-    <div id="bridge-progress"></div>
-    <p>Консоль:</p>
+    <div id="bridge-progress">
+      <div class="progress-label"></div>
+      <progress value="0" max="0"></progress>
+    </div>
+    <p>Консоль: <span class="button clear-console" id="buttonClearConsole" role="button" tabindex="0">Очистить</span></p>
     <div id="console"></div>
   `;
   mountBridgeConfigEditor(tab.querySelector('#bridgeConfig'));
 
   const progress = tab.querySelector('#bridge-progress');
+  const progressLabel = progress.querySelector('.progress-label');
+  const progressEl = progress.querySelector('progress');
   let consoleWriter = null; // Store the writer for reuse by expander buttons
   let consoleInitialized = false; // Track if console has been initialized
+  let onDataDisposer = null; // Dispose previous term.onData listener on re-init
 
   // D5x expander buttons stay disabled until the ESP32C6 firmware flash
   // completes and the chip reboots — they talk to the ESP over the post-flash
@@ -71,8 +90,11 @@ const genOnClickActivateBridge = () => async () => {
   ];
   const setExpanderEnabled = (on) => expanderBtns.forEach((b) => {
     if (!b) return;
-    b.style.opacity = on ? '1' : '.4';
-    b.dataset.on = on ? '1' : '';
+    if (on) {
+      b.removeAttribute('aria-disabled');
+    } else {
+      b.setAttribute('aria-disabled', 'true');
+    }
   });
   setExpanderEnabled(false);
 
@@ -87,6 +109,30 @@ const genOnClickActivateBridge = () => async () => {
   const ro = new ResizeObserver(() => term.fit());
   ro.observe(consoleEl);
 
+  // Clear-console button (fix 7): clears the xterm buffer without dropping
+  // the serial connection.
+  const clearBtn = tab.querySelector('#buttonClearConsole');
+  const clearConsole = () => term.term.clear();
+  clearBtn.addEventListener('click', clearConsole);
+  clearBtn.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      clearConsole();
+    }
+  });
+
+  // Handle USB unplug (fix 6): WebSerial fires 'disconnect' on the port (it
+  // bubbles to navigator.serial). Surface it to the user and disable the D5x
+  // buttons so no further sends go to a dead port.
+  const onDisconnect = () => {
+    term.term.writeln('\r\n[web4] соединение потеряно');
+    progressLabel.textContent = 'Соединение потеряно (USB отключён)';
+    setExpanderEnabled(false);
+  };
+  navigator.serial.addEventListener('disconnect', (e) => {
+    if (e.target === port) onDisconnect();
+  });
+
   // Switch to serial mode and start reading (called when expander button is pressed or after ESP32C6 flash)
   const initConsole = async () => {
     if (consoleInitialized) return; // Already initialized
@@ -95,23 +141,31 @@ const genOnClickActivateBridge = () => async () => {
       await transport.connect(115200); // CONFIG_ESP_CONSOLE_UART_BAUDRATE
 
       consoleWriter = transport.device.writable.getWriter();
-      term.term.onData((data) => consoleWriter.write(new TextEncoder().encode(data)));
+      // Dispose any prior onData listener before registering a new one (fix 3):
+      // each flash + re-init would otherwise stack another listener and echo
+      // every keystroke N times.
+      if (onDataDisposer) onDataDisposer.dispose();
+      onDataDisposer = term.term.onData((data) => consoleWriter.write(new TextEncoder().encode(data)));
       consoleInitialized = true;
       await transport.rawRead(
         (value) => term.term.write(value),
         () => false
       );
     } catch (e) {
-      progress.textContent = 'Ошибка инициализации консоли: ' + e.message;
+      progressLabel.textContent = 'Ошибка инициализации консоли: ' + e.message;
     }
   };
 
-  tab.querySelector('#buttonBridgeFlash').onclick = async () => {
+  const flashBtn = tab.querySelector('#buttonBridgeFlash');
+  const flashBridge = async () => {
+    if (flashBtn.getAttribute('aria-disabled') === 'true') return; // one-shot
+    flashBtn.setAttribute('aria-disabled', 'true');
     let cfg;
     try {
       cfg = JSON.parse(localStorage.getItem('bridgeConfig') || '{}');
     } catch (e) {
-      progress.textContent = 'ОШИБКА: неверный JSON конфигурации';
+      progressLabel.textContent = 'ОШИБКА: неверный JSON конфигурации';
+      flashBtn.removeAttribute('aria-disabled');
       return;
     }
 
@@ -122,11 +176,16 @@ const genOnClickActivateBridge = () => async () => {
       eraseAll: false,
       compress: true,
       reportProgress: (fileIndex, written, total) => {
-        progress.textContent = `Прошивка ${fileIndex + 1}/${fileArray.length}: ${written}/${total}`;
+        progressLabel.textContent = `Прошивка ${fileIndex + 1}/${fileArray.length}: ${written}/${total}`;
+        progressEl.max = total;
+        progressEl.value = written;
       }
     });
-    progress.textContent = 'Прошивка завершена. Перезагрузка…';
+    progressLabel.textContent = 'Прошивка завершена. Перезагрузка…';
+    progressEl.value = progressEl.max;
     setExpanderEnabled(true);
+    // flashBtn stays disabled — the ESP32C6 is flashed and rebooting; the D5x
+    // buttons are now the active controls. Re-flashing needs a fresh connect.
 
     // ESP32-C6 talks over the native USB-Serial-JTAG. The reset-to-run-app
     // sequence pulses EN via RTS while leaving the boot strap released. The
@@ -142,29 +201,38 @@ const genOnClickActivateBridge = () => async () => {
       consoleInitialized = false; // Reset flag to allow re-initialization
       await initConsole(); // This will reconnect and remount console
     } catch (e) {
-      progress.textContent = 'Готово. Переподключите USB для консоли.';
+      progressLabel.textContent = 'Готово. Переподключите USB для консоли.';
     }
   };
+  flashBtn.onclick = flashBridge;
+  flashBtn.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      flashBridge();
+    }
+  });
 
   // --- Expander flash buttons: send F0/F1/F2 commands to ESP via serial --------
+  // Each button disables itself (and its siblings) during the send (fix 2) —
+  // matches the expander tab's gating, so a second click can't re-trigger an
+  // in-progress SWIO flash.
   const setupExpanderButton = (buttonId, cmd, name) => {
     const btn = tab.querySelector(`#${buttonId}`);
     if (!btn) return;
 
-    btn.onclick = async () => {
-      if (!btn.dataset.on) {
-        return; // disabled until ESP32C6 flash completes
+    const trigger = async () => {
+      if (btn.getAttribute('aria-disabled') === 'true') {
+        return; // disabled until ESP32C6 flash completes / during a send
       }
-      console.log(`[Expander] Button clicked: ${name}, cmd: ${cmd}`); // Debug
-      progress.textContent = `Прошивка ${name}...`;
-      term.term.writeln(`\r\n[web4] Прошивка ${name}, команда: ${cmd}`); // Show in terminal
+      setExpanderEnabled(false);
+      term.term.writeln(`\r\n[web4] Прошивка ${name}, команда: ${cmd}`);
+      progressLabel.textContent = `Прошивка ${name}...`;
 
       try {
         // Initialize console if not already done
         if (!consoleWriter) {
-          console.log('[Expander] Initializing console...'); // Debug
           term.term.writeln('[web4] Инициализация консоли...');
-          progress.textContent = 'Инициализация консоли...';
+          progressLabel.textContent = 'Инициализация консоли...';
           await initConsole();
           // Wait a bit for console to be ready
           await new Promise(resolve => setTimeout(resolve, 500));
@@ -174,19 +242,32 @@ const genOnClickActivateBridge = () => async () => {
           throw new Error('Console writer not initialized');
         }
 
-        console.log(`[Expander] Sending command: ${cmd}`); // Debug
         term.term.writeln(`[web4] Отправка команды: ${cmd}`);
-
-        // Send flash command using the console writer
         await consoleWriter.write(new TextEncoder().encode(cmd));
-        progress.textContent = `Команда ${cmd} отправлена для ${name}.`;
+        progressLabel.textContent = `Команда ${cmd} отправлена для ${name}.`;
         term.term.writeln(`[web4] Команда отправлена`);
       } catch (e) {
-        console.error('[Expander] Error:', e); // Debug
-        progress.textContent = `Ошибка: ${e.message}`;
+        console.error('[Expander] Error:', e); // eslint-disable-line no-console
+        progressLabel.textContent = `Ошибка: ${e.message}`;
         term.term.writeln(`\r\n[web4] Ошибка: ${e.message}`);
+      } finally {
+        // Re-enable only if the ESP32C6 flash has already completed (the D5x
+        // buttons are otherwise gated on flash completion). If a disconnect
+        // happened mid-send, keep them disabled.
+        if (expanderBtns.every((b) => b && b.getAttribute('aria-disabled') === 'true')
+            && progressLabel.textContent.startsWith('Команда')) {
+          setExpanderEnabled(true);
+        }
       }
     };
+
+    btn.onclick = trigger;
+    btn.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        trigger();
+      }
+    });
   };
 
   setupExpanderButton('buttonExpanderFlash0', 'F0', 'D50');
@@ -194,67 +275,10 @@ const genOnClickActivateBridge = () => async () => {
   setupExpanderButton('buttonExpanderFlash2', 'F2', 'D52');
 };
 
-// --- Expander tab: trigger the ESP to SWIO-flash its embedded CH32 image ------
-// web4 does NOT drive SWIO itself (A11): it sends a 2-byte command over WebSerial
-// and the ESP runs the programmer locally against its compiled-in image (A13).
-const genOnClickActivateExpander = () => {
-  let port = null;
-
-  return async () => {
-    const tab = document.getElementById('panel-expander');
-    tab.innerHTML = `
-      <div class="success">Программатор экспандеров</div>
-      <p class="note">Режим программирования (джампер 3.3 В–3.3 В, ESP на USB).
-        ESP прошивает встроенный образ по SWIO.</p>
-      <p>Статус: <span id="exp-status">не подключено</span></p>
-      <div>
-        <span class="button flash" data-cmd="F0">Экспандер 0</span>
-        <span class="button flash" data-cmd="F1">Экспандер 1</span>
-        <span class="button flash" data-cmd="F2">Экспандер 2</span>
-        <span class="button flash" data-cmd="FA">Все три</span>
-      </div>
-      <p>Консоль:</p>
-      <pre id="exp-log" style="background:#030;color:#fff;border-radius:10px;padding:10px;height:240px;overflow:auto;white-space:pre-wrap;"></pre>
-    `;
-
-    const statusEl = tab.querySelector('#exp-status');
-    const logEl = tab.querySelector('#exp-log');
-    const log = (s) => { logEl.textContent += s; logEl.scrollTop = logEl.scrollHeight; };
-    const flashBtns = [...tab.querySelectorAll('.flash')];
-    const setEnabled = (on) => flashBtns.forEach((b) => { b.style.opacity = on ? '1' : '.4'; b.dataset.on = on ? '1' : ''; });
-    setEnabled(false);
-
-    try {
-      port = await connectEsp({onData: (text) => log(text)});
-      statusEl.textContent = 'подключено';
-      setEnabled(true);
-      log('\n[подключено]\n');
-    } catch (e) {
-      log('\n[ошибка подключения] ' + e.message + '\n');
-      return;
-    }
-
-    flashBtns.forEach((btn) => {
-      btn.onclick = async () => {
-        if (!btn.dataset.on) return;
-        const cmd = btn.dataset.cmd;
-        setEnabled(false);
-        log('\n[отправка ' + cmd + ']\n');
-        try {
-          await sendCommand(port, cmd);
-        } catch (e) {
-          log('\n[ошибка отправки] ' + e.message + '\n');
-        }
-        setEnabled(true);
-      };
-    });
-  };
-};
-
 // --- shell -------------------------------------------------------------------
 const initHtmlBridge = (hasSerial) => hasSerial ? /*html*/`
   <p>Для начала работы, подключите XAPOH к USB и нажмите кнопку:</p>
-  <div class="button" id="buttonBridge">Активировать Мост</div>
+  <div class="button" id="buttonBridge" role="button" tabindex="0">Активировать XAPOH</div>
 ` : /*html*/`
   <p>Ваш браузер:</p>
   <p><code>${navigator.userAgent}</code></p>
@@ -262,17 +286,29 @@ const initHtmlBridge = (hasSerial) => hasSerial ? /*html*/`
   <p>Попробуйте другой браузер, например Chrome</p>
 `;
 
-const initHtml = ($root, genBridge) => {
+const initHtml = ($root, hasSerial) => {
   $root.innerHTML = /*html*/`
     <div class="header">
       <div class="header-inner">
         <div class="header-title">XAPOH ${manifest.version}</div>
       </div>
     </div>
-    <div class="content" id="content">${initHtmlBridge(genBridge)}</div>
+    <div class="content" id="content">${initHtmlBridge(hasSerial)}</div>
   `;
-  if (genBridge) {
-    document.getElementById('buttonBridge').onclick = genBridge();
+
+  if (hasSerial) {
+    // Wire up the Activate button. genOnClickActivateBridge returns the async
+    // handler; the button disables itself (aria-disabled + "Подключение…") on
+    // click before the async requestPort/esptool.main() (fix 1).
+    const bridgeBtn = document.getElementById('buttonBridge');
+    const bridgeHandler = genOnClickActivateBridge();
+    bridgeBtn.addEventListener('click', bridgeHandler);
+    bridgeBtn.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        bridgeHandler();
+      }
+    });
   }
 };
 
@@ -280,9 +316,7 @@ const onLoad = async () => {
   console.log(manifest.version); // eslint-disable-line no-console
   initCSS();
   const hasSerial = 'serial' in navigator;
-  initHtml(document.getElementById('root'), hasSerial && genOnClickActivateBridge
-    // hasSerial && genOnClickActivateExpander
-  );
+  initHtml(document.getElementById('root'), hasSerial);
 };
 
 document.addEventListener('DOMContentLoaded', onLoad);

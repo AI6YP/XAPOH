@@ -21,18 +21,48 @@ export const mountBridgeConfigEditor = ($root) => {
     color: '#fff'
   });
   editor.innerHTML = localStorage.getItem('bridgeConfig') || defaultBridgeConfig;
-  editor.addEventListener('input', () => {
+
+  // Caption shown when the current text isn't valid JSON (so it won't save).
+  const caption = document.createElement('div');
+  caption.className = 'cfg-status';
+
+  const validate = () => {
     const json = editor.innerText;
-    console.log(json); // eslint-disable-line no-console
     try {
       JSON.parse(json);
       editor.style.backgroundColor = '#030';
+      caption.style.display = 'none';
       localStorage.setItem('bridgeConfig', json);
     } catch (e) {
       editor.style.backgroundColor = '#300';
+      caption.textContent = 'неверный JSON — не сохранено';
+      caption.style.display = 'block';
+    }
+  };
+  editor.addEventListener('input', validate);
+  validate();
+
+  const reset = document.createElement('div');
+  reset.className = 'button cfg-reset';
+  reset.setAttribute('role', 'button');
+  reset.setAttribute('tabindex', '0');
+  reset.textContent = 'Сбросить';
+  const doReset = () => {
+    editor.innerText = defaultBridgeConfig;
+    localStorage.setItem('bridgeConfig', defaultBridgeConfig);
+    validate();
+  };
+  reset.addEventListener('click', doReset);
+  reset.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      doReset();
     }
   });
+
   $root.appendChild(editor);
+  $root.appendChild(caption);
+  $root.appendChild(reset);
 
 };
 /* eslint-env browser */

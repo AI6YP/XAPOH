@@ -38,24 +38,6 @@ export const initCSS = () => {
       color: #fff;
       padding: 15px 0;
     }
-    .tabs {
-      display: flex;
-      gap: 5px;
-    }
-    .tab {
-      padding: 15px 20px;
-      cursor: pointer;
-      color: #888;
-      border-bottom: 2px solid transparent;
-      transition: color 0.2s, border-color 0.2s;
-    }
-    .tab:hover {
-      color: #ccc;
-    }
-    .tab.active {
-      color: #fff;
-      border-bottom-color: #f80;
-    }
     .content {
       padding: 20px;
       max-width: 1600px;
@@ -66,19 +48,51 @@ export const initCSS = () => {
       flex-direction: column;
       min-height: 0;
     }
-    .tab-panel {
-      display: none;
-    }
-    .tab-panel.active {
-      display: block;
-    }
     .button {
       margin: 10px 0px;
-      padding: 10px;
-      background: #047;
+      padding: 8px 14px;
+      background: linear-gradient(180deg, #2a6df4 0%, #1453d6 48%, #0b3fa8 52%, #08369a 100%);
       cursor: pointer;
-      border-radius: 10px;
+      border: 1px solid #052a78;
+      border-radius: 4px;
       display: inline-block;
+      align-self: flex-start;
+      color: #fff;
+      text-shadow: 0 1px 1px rgba(0, 0, 0, .5);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, .35),
+        inset 0 -1px 0 rgba(0, 0, 0, .35),
+        1px 1px 0 rgba(0, 0, 0, .45);
+      transition: background 0.08s, box-shadow 0.08s, transform 0.08s;
+      user-select: none;
+    }
+    .button:hover {
+      background: linear-gradient(180deg, #3a7dff 0%, #1a5ee0 48%, #1149b4 52%, #0e42a6 100%);
+    }
+    .button:active {
+      background: linear-gradient(180deg, #08369a 0%, #0b3fa8 48%, #1453d6 52%, #2a6df4 100%);
+      box-shadow:
+        inset 0 2px 4px rgba(0, 0, 0, .55),
+        inset 0 -1px 0 rgba(255, 255, 255, .12);
+      transform: translateY(1px);
+    }
+    .button:focus-visible {
+      outline: 2px solid #f80;
+      outline-offset: 1px;
+    }
+    .button[aria-disabled="true"] {
+      opacity: .45;
+      cursor: not-allowed;
+      filter: grayscale(.5);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, .2),
+        inset 0 -1px 0 rgba(0, 0, 0, .25);
+      transform: none;
+    }
+    .button[aria-disabled="true"]:hover,
+    .button[aria-disabled="true"]:active {
+      background: linear-gradient(180deg, #2a6df4 0%, #1453d6 48%, #0b3fa8 52%, #08369a 100%);
+      transform: none;
     }
     .flash-row {
       display: flex;
@@ -103,6 +117,35 @@ export const initCSS = () => {
       border-radius: 1px;
       background: #700;
       color: #fff;
+    }
+    .clear-console {
+      padding: 2px 10px;
+      font-size: 12px;
+      margin-left: 10px;
+      vertical-align: middle;
+    }
+    .cfg-status {
+      display: none;
+      color: #f88;
+      font-size: 12px;
+      margin-top: 4px;
+    }
+    .cfg-reset {
+      padding: 4px 10px;
+      font-size: 12px;
+      margin-top: 6px;
+    }
+    #bridge-progress {
+      margin: 10px 0;
+    }
+    #bridge-progress .progress-label {
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+    #bridge-progress progress {
+      width: 100%;
+      height: 16px;
+      accent-color: #f80;
     }
     #console {
       flex: 1 1 auto;
