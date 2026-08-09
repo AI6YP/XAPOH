@@ -43,16 +43,18 @@ const genOnClickActivateBridge = () => async () => {
   const tab = document.getElementById('content');
   tab.innerHTML = /*html*/`
     <div class="success">Мост подключен: ${chip}</div>
-    <div style="margin: 10px 0; padding: 10px; background: #f0f0f0; border-radius: 5px;">
+    <div style="margin: 10px 0; padding: 10px; background: #222; border: 1px solid #444; border-radius: 5px; color: #eee;">
       <strong>MAC:</strong> ${chip.match(/MAC: ([0-9a-f:]+)/i)?.[1] || 'N/A'}<br>
       <strong>Flash:</strong> Встроенный (игнорируйте предупреждение Flash ID)
     </div>
     <h3>Конфигурация</h3>
     <div class="bridge-config" id="bridgeConfig"></div>
-    <span class="button flush" id="buttonBridgeFlash">Прошить ESP32C6</span>
-    <span class="button flash" id="buttonExpanderFlash0">Прошить D50</span>
-    <span class="button flash" id="buttonExpanderFlash1">Прошить D51</span>
-    <span class="button flash" id="buttonExpanderFlash2">Прошить D52</span>
+    <div class="flash-row">
+      <span class="button flush" id="buttonBridgeFlash">Прошить ESP32C6</span>
+      <span class="button flash" id="buttonExpanderFlash0">Прошить D50</span>
+      <span class="button flash" id="buttonExpanderFlash1">Прошить D51</span>
+      <span class="button flash" id="buttonExpanderFlash2">Прошить D52</span>
+    </div>
     <div id="bridge-progress"></div>
     <p>Консоль:</p>
     <div id="console"></div>
@@ -63,10 +65,31 @@ const genOnClickActivateBridge = () => async () => {
   let consoleWriter = null; // Store the writer for reuse by expander buttons
   let consoleInitialized = false; // Track if console has been initialized
 
+  // D5x expander buttons stay disabled until the ESP32C6 firmware flash
+  // completes and the chip reboots — they talk to the ESP over the post-flash
+  // serial console, which only exists after "Прошивка завершена. Перезагрузка…".
+  const expanderBtns = [
+    tab.querySelector('#buttonExpanderFlash0'),
+    tab.querySelector('#buttonExpanderFlash1'),
+    tab.querySelector('#buttonExpanderFlash2')
+  ];
+  const setExpanderEnabled = (on) => expanderBtns.forEach((b) => {
+    if (!b) return;
+    b.style.opacity = on ? '1' : '.4';
+    b.dataset.on = on ? '1' : '';
+  });
+  setExpanderEnabled(false);
+
   // Mount xterm terminal immediately (but don't connect to serial yet)
   const consoleEl = tab.querySelector('#console');
   consoleEl.appendChild(term.div);
-  term.fit();
+  // Keep the terminal fitted to its flex container: a ResizeObserver on
+  // #console catches every size change — window resize, the config editor
+  // growing/shrinking above, and the initial flex layout settling — and
+  // re-runs fit() so rows/cols track the box. RO also fires once on attach,
+  // covering the first layout.
+  const ro = new ResizeObserver(() => term.fit());
+  ro.observe(consoleEl);
 
   // Switch to serial mode and start reading (called when expander button is pressed or after ESP32C6 flash)
   const initConsole = async () => {
@@ -107,6 +130,7 @@ const genOnClickActivateBridge = () => async () => {
       }
     });
     progress.textContent = 'Прошивка завершена. Перезагрузка…';
+    setExpanderEnabled(true);
 
     // ESP32-C6 talks over the native USB-Serial-JTAG. The reset-to-run-app
     // sequence pulses EN via RTS while leaving the boot strap released. The
@@ -132,6 +156,9 @@ const genOnClickActivateBridge = () => async () => {
     if (!btn) return;
 
     btn.onclick = async () => {
+      if (!btn.dataset.on) {
+        return; // disabled until ESP32C6 flash completes
+      }
       console.log(`[Expander] Button clicked: ${name}, cmd: ${cmd}`); // Debug
       progress.textContent = `Прошивка ${name}...`;
       term.term.writeln(`\r\n[web4] Прошивка ${name}, команда: ${cmd}`); // Show in terminal
@@ -241,8 +268,12 @@ const initHtmlBridge = (hasSerial) => hasSerial ? /*html*/`
 
 const initHtml = ($root, genBridge) => {
   $root.innerHTML = /*html*/`
-    <div class="header-title">XAPOH ${manifest.version}</div>
-    <div id="content">${initHtmlBridge(genBridge)}</div>
+    <div class="header">
+      <div class="header-inner">
+        <div class="header-title">XAPOH ${manifest.version}</div>
+      </div>
+    </div>
+    <div class="content" id="content">${initHtmlBridge(genBridge)}</div>
   `;
   if (genBridge) {
     document.getElementById('buttonBridge').onclick = genBridge();

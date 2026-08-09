@@ -15,17 +15,23 @@ export const xterm = () => {
   const clipboardAddon = new ClipboardAddon();
   term.loadAddon(clipboardAddon);
   const div = document.createElement('div');
+  div.className = 'xterm-host';
   term.open(div);
-  window.addEventListener('resize', () => {
+  const fit = () => {
+    // FitAddon.fit() no-ops if the terminal has no measured parent, but guard
+    // anyway so callers (ResizeObserver, window resize) never throw before the
+    // terminal is attached to the document.
+    if (!term.element || !term.element.parentElement) return;
     fitAddon.fit();
-  });
+  };
+  window.addEventListener('resize', fit);
   return {
     div,
     term,
-    fit: () => fitAddon.fit(),
+    fit,
     callbacks: {
       clean: () => {
-        fitAddon.fit();
+        fit();
         term.clear();
       },
       writeLine: (data) => {
