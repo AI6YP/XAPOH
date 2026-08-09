@@ -1,9 +1,4 @@
-const defaultBridgeConfig = `{
-  "wifi": {
-    "ssid": "myssid",
-    "password": "mypassword"
-  }
-}`;
+const defaultBridgeConfig = `{ "wifi": { "ssid": "myssid", "password": "mypassword" } }`;
 
 export const mountBridgeConfigEditor = ($root) => {
 
@@ -20,7 +15,7 @@ export const mountBridgeConfigEditor = ($root) => {
     outline: 'none',
     borderRadius: '10px',
     backgroundColor: '#030',
-    minHeight: '100px',
+    minHeight: '25px', // enough for one line
     fontSize: '14px',
     padding: '10px',
     color: '#fff'

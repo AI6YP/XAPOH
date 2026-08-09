@@ -43,10 +43,6 @@ const genOnClickActivateBridge = () => async () => {
   const tab = document.getElementById('content');
   tab.innerHTML = /*html*/`
     <div class="success">Мост подключен: ${chip}</div>
-    <div style="margin: 10px 0; padding: 10px; background: #222; border: 1px solid #444; border-radius: 5px; color: #eee;">
-      <strong>MAC:</strong> ${chip.match(/MAC: ([0-9a-f:]+)/i)?.[1] || 'N/A'}<br>
-      <strong>Flash:</strong> Встроенный (игнорируйте предупреждение Flash ID)
-    </div>
     <h3>Конфигурация</h3>
     <div class="bridge-config" id="bridgeConfig"></div>
     <div class="flash-row">
