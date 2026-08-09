@@ -1,5 +1,5 @@
 idf_component_register(
   SRCS "swio_programmer.c"
   INCLUDE_DIRS "include"
-  PRIV_REQUIRES esp_driver_gpio esp_rom esp_hw_support
+  PRIV_REQUIRES esp_driver_gpio esp_rom esp_hw_support esp_timer
 )

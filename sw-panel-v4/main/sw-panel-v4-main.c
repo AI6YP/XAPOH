@@ -219,6 +219,37 @@ static void flash_cmd_task(void *arg) {
       case '1': flash_one(1); break;
       case '2': flash_one(2); break;
       case 'A': flash_one(0); flash_one(1); flash_one(2); break;
+      // Physical bring-up probe: drive gpio0/1/2 directly (bypass the SWIO
+      // bit-bang) so we can confirm the pad + read path are alive before
+      // debugging protocol. From web4 send 'S0' / 'S1' / 'S2'.
+      // Phase C logs the pin level 10x over 5s — short the gpio to GND by hand
+      // in that window; the log MUST flip to 0. If it stays 1, the ESP read
+      // path / pad / wiring is the problem, not the SWIO code.
+      case 's': case 'S': {
+        if (usb_serial_jtag_read_bytes(&c, 1, pdMS_TO_TICKS(1000)) != 1) break;
+        int idx = c - '0';
+        if (idx >= 0 && idx <= 2) {
+          int g = link_gpio_num(idx);
+          link_flash_begin(idx);
+          swio_pin_selftest(g);
+          link_flash_end(idx);
+        }
+        break;
+      }
+      // "Listen" probe for the reflash-running-chip problem (plan risk #3):
+      // hammers connect() for 15s so you can power-cycle the CH32 mid-probe.
+      // If it answers right after the CH32's reset (before it reaches __WFI),
+      // the debug tap is alive at boot but gated during WFI sleep.
+      case 'l': case 'L': {
+        if (usb_serial_jtag_read_bytes(&c, 1, pdMS_TO_TICKS(1000)) != 1) break;
+        int idx = c - '0';
+        if (idx >= 0 && idx <= 2) {
+          link_flash_begin(idx);
+          swio_listen(link_gpio_num(idx), 15);
+          link_flash_end(idx);
+        }
+        break;
+      }
       default: break;
     }
   }
