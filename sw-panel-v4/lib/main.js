@@ -23,13 +23,13 @@ const sendGpio = (socket, configs) => {
   configs.map((cfg) => {
     if (cfg.val) {
       if (cfg.name === 'ON') {
-        g7 = g7 | 2; // D52 "ON" signal
+        g7 = g7 | 8; // D52 "ON" signal
         leds[0] = 100; // red 0
         if (bandIdx) {
           leds[bandIdx * 3 + 2] = 100; // blue
         }
       } else if (cfg.name === 'PreAmp') {
-        g7 = g7 | 1; // D52 "PREAMP" signal
+        g7 = g7 | 4; // D52 "PREAMP" signal
         leds[2] = 100; // blue 0
         if (bandIdx) {
           leds[bandIdx * 3 + 1] = 100; // red (green)
